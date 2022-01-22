@@ -8,8 +8,13 @@ ItemNumberPerSectors    equ 0x10; 512 / 32 = 16
 BaseOfLoader			equ 0x1000
 OffsetOfLoader  		equ 0x00
 SectorBalance			equ	17	
-StartEospp 				db "Start Eospp boot" 
-NoEosppLoader   		db "Eospp loader don't exist"
+StartEosppBootMsgLen    equ 16 
+NoEosppLoaderMsgLen 	equ 24
+
+	jmp	short Start
+	nop
+StartEosppBootMsg 		db "Start Eospp boot" 
+NoEosppLoaderMsg   		db "Eospp loader don't exist"
 LoaderFileName			db "LOADER  BIN",1
 BS_OEMName				db	'MINEboot'
 BPB_BytesPerSec			dw	512		;the number of bytes per sectors
@@ -54,12 +59,12 @@ Start:
 	mov	ax,	1301H; AH = 13H AL = 01H
 	mov	bx,	000fH
 	mov	dx,	0000H
-	mov	cx,	10
+	mov	cx,	StartEosppBootMsgLen
 	push	ax
 	mov	ax,	ds
 	mov	es,	ax
 	pop	ax
-	mov	bp,	StartEospp; es:bp save the address of StartEospp
+	mov	bp,	StartEosppBootMsg; ebp save the address of StartEosppotMsg
 	int	10h
 ;======= reset floppy =============================
 	xor	ah,	ah
@@ -118,12 +123,12 @@ No_LoaderBin:
 	mov	ax,	1301h
 	mov	bx,	008ch
 	mov	dx,	0100h
-	mov	cx,	21
+	mov	cx,	NoEosppLoaderMsgLen
 	push	ax
 	mov	ax,	ds
 	mov	es,	ax
 	pop	ax
-	mov	bp,	NoEosppLoader
+	mov	bp,	NoEosppLoaderMsg
 	int	10h
 	jmp	$
 ;======= found loader.bin name in root director struct =========
