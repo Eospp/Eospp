@@ -1,6 +1,9 @@
 org 10000H
-StartEosppLoaderMsg db "Start Eospp Loader"
+    jmp LoaderStart
+StartEosppLoaderMsgLen equ 18
+StartEosppLoaderMsg    db "Start Eospp Loader"
 
+LoaderStart:
     mov	ax,	cs
 	mov	ds,	ax
 	mov	es,	ax
@@ -9,11 +12,11 @@ StartEosppLoaderMsg db "Start Eospp Loader"
 	mov	sp,	0x7c00
 
 ;=======	display on screen : Start Loader......
-
+Display:
 	mov	ax,	1301h
 	mov	bx,	000fh
 	mov	dx,	0200h		;row 2
-	mov	cx,	12
+	mov	cx,	StartEosppLoaderMsgLen
 	push	ax
 	mov	ax,	ds
 	mov	es,	ax

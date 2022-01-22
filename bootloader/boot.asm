@@ -1,5 +1,5 @@
 org 0x7c00 ; the start address of boot
-StackBase 				equ 0x7c00 
+StackBase 				equ 0x7c00
 RootDirSectors			equ	14
 RootDirStartSectorNum   equ 19
 SectorNumOfFAT1Start	equ	1
@@ -13,9 +13,6 @@ NoEosppLoaderMsgLen 	equ 24
 
 	jmp	short Start
 	nop
-StartEosppBootMsg 		db "Start Eospp boot" 
-NoEosppLoaderMsg   		db "Eospp loader don't exist"
-LoaderFileName			db "LOADER  BIN",1
 BS_OEMName				db	'MINEboot'
 BPB_BytesPerSec			dw	512		;the number of bytes per sectors
 BPB_SecPerClus			db	1		;the number of sectors per cluster
@@ -38,6 +35,9 @@ BS_FileSysType			db	'FAT12   '
 SectorNo				dw	0
 Odd						db	0
 RootDirSizeForLoop		dw	RootDirSectors
+StartEosppBootMsg 		db "Start Eospp boot" 
+NoEosppLoaderMsg   		db "Eospp loader don't exist"
+LoaderFileName			db "LOADER  BIN",1
 Start: 
     mov ax,cs
     mov ds,ax
