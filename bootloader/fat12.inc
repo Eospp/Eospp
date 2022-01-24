@@ -21,3 +21,6 @@ BS_BootSig				db	0x29
 BS_VolID				dd	0
 BS_VolLab				db	'boot loader'
 BS_FileSysType			db	'FAT12   '
+SectorNo				dw	0
+Odd						db	0
+RootDirSizeForLoop		dw	RootDirSectors

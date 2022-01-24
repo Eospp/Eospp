@@ -12,12 +12,9 @@ NoEosppLoaderMsgLen 	equ 24
 
 %include "fat12.inc"
 
-SectorNo				dw	0
-Odd						db	0
-RootDirSizeForLoop		dw	RootDirSectors
-StartEosppBootMsg 		db "Start Eospp boot" 
-NoEosppLoaderMsg   		db "Eospp loader don't exist"
-LoaderFileName			db "LOADER  BIN",1
+StartEosppBootMsg       db "Start Eospp boot" 
+NoEosppLoaderMsg        db "Eospp loader don't exist"
+LoaderFileName          db "LOADER  BIN",1
 Start: 
     mov ax,		cs
     mov ds,		ax
@@ -36,14 +33,12 @@ Start:
 	mov	dx,		0000H
 	int	10H
 ;======= display on screen : Start Eospp boot ===================
+	mov	ax,		ds
+	mov	es,		ax
 	mov	ax,		1301H; AH = 13H AL = 01H
 	mov	bx,		000fH
 	mov	dx,		0000H
 	mov	cx,		StartEosppBootMsgLen
-	push ax
-	mov	ax,		ds
-	mov	es,		ax
-	pop	ax
 	mov	bp,		StartEosppBootMsg; ebp save the address of StartEosppotMsg
 	int	10h
 ;======= reset floppy =============================
@@ -93,16 +88,16 @@ Cmp_Next:
 
 File_Different:
 
-	and	di,		0ffe0h
-	add	di,		20h
+	and	di,		0FFE0H
+	add	di,		20H
 	mov	si,		LoaderFileName
 	jmp			Search_For_LoaderBin
 
 No_LoaderBin:
 
-	mov	ax,		1301h
-	mov	bx,		008ch
-	mov	dx,		0100h
+	mov	ax,		1301H
+	mov	bx,		008CH
+	mov	dx,		0100H
 	mov	cx,		NoEosppLoaderMsgLen
 	push		ax
 	mov	ax,		ds
@@ -116,8 +111,8 @@ No_LoaderBin:
 Loader_Found:
 
 	mov	ax,		RootDirSectors
-	and	di,		0ffe0h
-	add	di,		01ah
+	and	di,		0FFE0H
+	add	di,		01AH
 	mov	cx,		word	[es:di]
 	push		cx
 	add	cx,		ax
@@ -130,10 +125,10 @@ Loader_Found:
 Go_On_Loading_File:
 	push		ax
 	push		bx
-	mov	ah,		0eh
+	mov	ah,		0EH
 	mov	al,		'.'
-	mov	bl,		0fh
-	int	10h
+	mov	bl,		0FH
+	int	10H
 	pop			bx
 	pop			ax
 
@@ -141,7 +136,7 @@ Go_On_Loading_File:
 	call		Read_One_Sector
 	pop			ax
 	call		Get_FAT_Entry
-	cmp	ax,		0fffh
+	cmp	ax,		0FFFH
 	jz			File_Loaded
 	push		ax
 	mov	dx,		RootDirSectors
@@ -158,6 +153,13 @@ Goto_Next_Sector_In_Root_Dir:
 	
 	add	word	[SectorNo],	1
 	jmp	Search_In_Root_Dir_Begin
+
+;========================================================
+;==== read one sector function ==========================
+;===  ax 	 : the start number of sector
+;===  cl	 : the number of sectors that need to be read
+;=== [es:bx] : pointer the address of buf
+;========================================================
 Read_One_Sector:
 	
 	push bp
