@@ -1,7 +1,7 @@
 RootDirSectors			equ	14
 RootDirStartSectorNum   equ 19
 SectorNumOfFAT1Start	equ	1
-SectorBalance			equ	17	
+SectorBalance			equ	17	    ; equal ${RootDirStartSectorNum} - 2
 BS_OEMName				db	'MINEboot'
 BPB_BytesPerSec			dw	512		;the number of bytes per sectors
 BPB_SecPerClus			db	1		;the number of sectors per cluster
