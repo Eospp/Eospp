@@ -1,3 +1,7 @@
-
 bootloader/*.bin
 bootloader/*.img
+
+kernel/*.bin
+kernel/*.o
+kernel/*.s
+kernel/system
