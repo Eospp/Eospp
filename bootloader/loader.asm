@@ -17,7 +17,7 @@ NullDsc32 			   dd 0,0
 CodeDsc32			   dd 0x0000FFFF,0x00CF9A00
 DataDsc32			   dd 0x0000FFFF,0x00CF9200
 GdtEnd:
-GdtPtr:				   dw  GdtEnd - GdtStart - 1; -1 ?
+Gdt32Ptr:			   dw  GdtEnd - GdtStart - 1; 
 			   		   dd  GdtStart
 SelectorCode32		   equ CodeDsc32 - GdtStart
 SelectorData32		   equ DataDsc32 - GdtStart
@@ -29,7 +29,7 @@ NullDsc64 			   dq 0x0000000000000000
 CodeDsc64			   dq 0x0020980000000000
 DataDsc64			   dq 0x0000920000000000
 Gdt64End:
-Gdt64Ptr:			   dw Gdt64End - Gdt64Start
+Gdt64Ptr:			   dw Gdt64End - Gdt64Start - 1
 					   dd Gdt64Start
 SelectorCode64         equ CodeDsc64 - Gdt64Start
 SelectorData64         equ DataDsc64 - Gdt64Start
@@ -46,16 +46,24 @@ StartEosppLoaderMsg    db  "Start Eospp Loader"
 GetSVGAMsg			   db  "Start to get SVGA"
 FailedGetSVGAMsg	   db  "failed to get SVGA"
 NoSupportLongModeMsg   db  "no support long mode"
+FinishLoadEosppBinMsg  db  "Load Eospp.bin successful"
+FailSetSVGAModeMsg	   db  "failed to set SVGA mode"
+GetSVGAMsgSuccessMsg   db  "Get SVGA info successful"
+OutLine				   dw   0200H
 
-NoSupportLongModeMsgLen equ 20
-FailedGetSVGAMsgLen	    equ 18
-GetSVGAMsgLen		    equ 17
-EosppBinNameLen		    equ 11
-NoEosppBinMsgLen	    equ 21
-FailedGetMemoryMsgLen   equ 29
-SuccessGetMemoryMsgLen  equ 30
-GetMemoryMsgLen		    equ 28
-StartEosppLoaderMsgLen  equ 18
+NoSupportLongModeMsgLen 		equ 20
+FailedGetSVGAMsgLen	    		equ 18
+GetSVGAMsgLen		    		equ 17
+EosppBinNameLen		    		equ 11
+NoEosppBinMsgLen	    		equ 21
+FailedGetMemoryMsgLen   		equ 29
+SuccessGetMemoryMsgLen 			equ 30
+GetMemoryMsgLen		    		equ 28
+StartEosppLoaderMsgLen  	 	equ 18
+FinishLoadEosppBinMsgLen  		equ 25
+FailSetSVGAModeMsglen		    equ 23
+GetSVGAMsgSuccessMsgLen		    equ 24
+
 
 [SECTION .s16]
 [BITS 16]
@@ -69,17 +77,9 @@ LoaderStart:
 
 ;======= display on screen : Start Eospp Loader ========
 Display:
-	mov	 ax,	1301H
-	mov	 bx,	000fH
-	mov	 dx,	0200H	
-	mov	 cx,	StartEosppLoaderMsgLen
-	push ax
-	mov	 ax,	ds
-	mov	 es,	ax
-	pop	 ax
-	mov  bp,	StartEosppLoaderMsg
-	int	 10H
-
+	mov ax, 	StartEosppLoaderMsgLen
+	mov bx, 	StartEosppLoaderMsg
+	call 		Printf
 ;======= open A20 =========
 
 	push ax
@@ -90,7 +90,7 @@ Display:
 	cli ;			 	 	 close the interrupt
     db   0x66
 
-	lgdt [GdtPtr]
+	lgdt [Gdt32Ptr]
 	mov  eax,	cr0
 	or 	 eax,	1
 	mov  cr0,	eax
@@ -136,7 +136,7 @@ Search_For_EosppBin:
 
 Cmp_File_Name:
 	cmp	cx,		0
-	jz	EosppBin_Found; 				  cx == 0
+	jz	Found_EosppBin; 				  cx == 0
 	dec	cx
 	lodsb	
 	cmp	al,		byte[es:di]
@@ -154,7 +154,22 @@ File_Different:
 	mov	si,		EosppBinName
 	jmp	Search_For_EosppBin
 
-
+;========================================================
+;==== printf function ===================================
+;===  ax 	 : string length 
+;===  bx	 : string address 
+;========================================================
+Printf:
+    mov  cx,	ax
+	mov  bp,	bx
+	mov  ax,	ds
+	mov  es,	ax
+	mov	 ax,	1301H
+	mov	 bx,	000fH
+	mov	 dx,	[OutLine]	
+	int	 10H
+	add  word[OutLine], 0200H
+	ret
 Goto_Next_Sector_In_Root_Dir:
 	
 	add	word	[SectorNo],	1
@@ -231,24 +246,17 @@ Label_Even_2:
 	pop	es
 	ret
 No_EosppBin:
-	mov	ax,		1301H
-	mov	bx,		008cH
-	mov	dx,		0100H
-	mov	cx,		NoEosppBinMsgLen
-	push		ax
-	mov	ax,		ds
-	mov	es,		ax
-	pop	ax
-	mov	bp,		NoEosppBinMsg
-	int	10h
+	mov ax,     NoEosppBinMsgLen
+	mov bx,		NoEosppBinMsg
+	call 		Printf
 	jmp	$
 
 ;======= found eospp.bin name in root director struct =========
-EosppBin_Found:
+Found_EosppBin:
 	mov	ax,		RootDirSectors
 	and	di,		0FFE0H
 	add	di,		01AH
-	mov	cx,		word	[es:di]
+	mov	cx,		word	[es:di]; get the start cluster of eospp.bin 
 	push		cx
 	add	cx,		ax
 	add	cx,		SectorBalance
@@ -258,14 +266,6 @@ EosppBin_Found:
 	mov	ax,		cx
 
 Loading_EosppBin:
-	push		ax
-	push		bx
-	mov	ah,		0eH
-	mov	al,		'.'
-	mov	bl,		0fH
-	int	10H
-	pop	bx
-	pop	ax
 	mov	 cl,	1
 	call Read_One_Sector
 	pop	 ax
@@ -301,22 +301,19 @@ Mov_Kernel:
 	pop  eax 
 	pop  cx 
 
-	call Get_FAT_Entry
+	call 			   Get_FAT_Entry
 	cmp	 ax,		   0FFFH
-	jz	 Kernel_Loaded
+	jz	 			   Kernel_Loaded
 	push ax
 	mov  dx,		   RootDirSectors
 	add  ax,		   dx
 	add  ax,		   SectorBalance
-	jmp  Loading_EosppBin
+	jmp  			   Loading_EosppBin
 
 Kernel_Loaded:
-	mov  ax,  		  0B800H
-	mov  gs,		  ax
-	mov  ah,		  0FH
-	mov  al,		  'G'
-	mov  [gs:((80 * 0 + 39) * 2)], ax
-
+	mov  ax,		  FinishLoadEosppBinMsgLen
+	mov  bx,		  FinishLoadEosppBinMsg
+	call			  Printf 
 Kill_Motor:
 	push dx
 	mov  dx,		  03F2H
@@ -324,14 +321,9 @@ Kill_Motor:
 	out  dx,		  al
 	pop  dx 
 	
-	mov  ax,		  ds
-	mov  es,		  ax
-	mov  ax,		  1301H
-	mov  bx,		  000FH
-	mov  dx,		  0400H
-	mov  cx,		  GetMemoryMsgLen
-	mov  bp,		  GetMemoryMsg
-	int  10H
+	mov  ax,		  GetMemoryMsgLen
+	mov  bx,		  GetMemoryMsg
+	call 			  Printf
 
 	mov  ebx,		  0
 	mov  ax,		  0x00
@@ -343,41 +335,27 @@ Get_Memory:
 	mov  ecx,		  20
 	mov  edx,		  0x534D4150
 	int  15H
-	jc   Fail_Get_Memory
+	jc   			  Fail_Get_Memory
 	add  di,		  20
 	cmp  ebx,		  0
-	jne  Get_Memory
-	jmp	 Success_Get_Memory
+	jne  			  Get_Memory
+	jmp				  Success_Get_Memory
 Fail_Get_Memory:
-	mov  ax,		  ds
-	mov  es,		  ax
-	mov  ax,		  1301H
-	mov  bx,		  008CH
-	mov  dx,		  0500H
-	mov  cx,		  FailedGetMemoryMsgLen
-	mov  bp,		  FailedGetMemoryMsg
-	int  10H
-	jmp  $
+
+	mov  ax,		  FailedGetMemoryMsgLen
+	mov  bx,	      FailedGetMemoryMsg
+	call			  Printf
+	jmp	 $
 
 Success_Get_Memory:
-	mov  ax,		  ds
-	mov  es,		  ax
-	mov  ax,  		  1301H
-	mov  bx,		  000FH
-	mov  dx,		  0600H
-	mov  cx,		  SuccessGetMemoryMsgLen
-	mov  bp,		  SuccessGetMemoryMsg
-	int  10H
+	mov  ax,		  SuccessGetMemoryMsgLen
+	mov  bx,		  SuccessGetMemoryMsg
+	call			  Printf
 
 Get_SVGA:
-	mov  ax,		  ds
-	mov  es,		  ax
-	mov  ax,  		  1301H
-	mov  bx,		  000FH
-	mov  dx,		  0800H
-	mov  cx,		  GetSVGAMsgLen
-	mov  bp,		  GetSVGAMsg
-	int  10H
+	mov  ax,		  GetSVGAMsgLen
+	mov  bx,		  GetSVGAMsg
+	call		  	  Printf
 
 	mov  ax,		  0x00
 	mov  es,		  ax
@@ -386,29 +364,29 @@ Get_SVGA:
 	int  10H
 
 	cmp  ax,		  004FH
-	jz   Success_Get_SVGA
+	jz   			  Success_Get_SVGA
 Fail_Get_SVGA:
-	mov  ax,		  ds
-	mov  es,		  ax
-	mov  ax,  		  1301H
-	mov  bx,		  000FH
-	mov  dx,		  0900H
-	mov  cx,		  FailedGetSVGAMsgLen
-	mov  bp,		  FailedGetSVGAMsg
-	int  10H
+	mov  ax,		  FailedGetSVGAMsgLen
+	mov  bx,		  FailedGetSVGAMsg
+	call 			  Printf
 	jmp  $
 Success_Get_SVGA:
-	mov	 ax,		  0x00
-	mov	 es,		  ax
-	mov	 si,		  0x800e
+	mov  ax,		  GetSVGAMsgSuccessMsgLen
+	mov  bx,		  GetSVGAMsgSuccessMsg
+	call	   		  Printf
 
-	mov	 esi,		  dword[es:si]
-	mov	 edi,		  0x8200
+	; 	======= set SVGA mode =================	
+	mov	 ax,		  4F02h
+	mov	 bx,		  4180h	
+	int 			  10h
+	cmp	 ax,		  004Fh
+	jnz				  Set_Svga_Mode_Failed
 
 	cli
 
+
 	db   			  0x66
-	lgdt 			  [GdtPtr]
+	lgdt 			  [Gdt32Ptr]
 	
 	mov	 eax,		  cr0
 	or   eax,		  1
@@ -427,9 +405,9 @@ Switch_Protect:
 	mov  ss,		  ax
 	mov  esp,		  7E00H
 
-	call Support_Long_Mode
+	call 			  Support_Long_Mode
 	test eax,		  eax
-	jz   No_Support_Long_Mode
+	jz   			  No_Support_Long_Mode
 
 
 ;========== temporary page table ===============
@@ -460,7 +438,6 @@ Switch_Protect:
 	mov	dword	[0x9202c],	0x000000
 ;===============================================
 
-	db  			  0x66
 	lgdt  			  [Gdt64Ptr]
 	mov   ax,		  0x10
 	mov   ds,   	  ax
@@ -486,6 +463,9 @@ Switch_Protect:
 	bts   eax,		  0
 	bts   eax,		  31
 	mov   cr0,		  eax 
+	
+
+
 
 	jmp   SelectorCode64:KernelOffsetAddr
 Support_Long_Mode:
@@ -497,19 +477,21 @@ Support_Long_Mode:
 	mov   eax,        0x80000001
 	cpuid
 	bt    edx,        29
-	setc   al
+	setc  al
 
 Done:
 	movzx  eax,       al
 	ret 
 
 No_Support_Long_Mode:
-	mov  ax,		  ds
-	mov  es,		  ax
-	mov  ax,  		  1301H
-	mov  bx,		  000FH
-	mov  dx,		  0900H
-	mov  cx,		  NoSupportLongModeMsgLen
-	mov  bp,		  NoSupportLongModeMsg
-	int  10H
+	mov  ax,		  NoSupportLongModeMsgLen
+	mov  bx,	      NoSupportLongModeMsg
+	call			  Printf
 	jmp  $
+
+Set_Svga_Mode_Failed:
+	mov  ax,		  FailSetSVGAModeMsglen
+	mov  bx,		  FailSetSVGAModeMsg
+	call		      Printf
+	jmp  $
+
