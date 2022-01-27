@@ -22,12 +22,15 @@ _start:
         movq  $0x7E00,          %rsp
         movq  $0x101000,        %rax
         movq  %rax,             %cr3
-        movq  entry64(%rip),    %rax
+        movq  SwitchSeg(%rip),  %rax
         pushq $0x08
         pushq %rax
         lretq
 
-entry64:
+SwitchSeg:
+        .quad                   Entry64
+
+Entry64:
         movq  $0x10,            %rax
         movq  %rax,             %ds
         movq  %rax,             %es
@@ -36,10 +39,13 @@ entry64:
 
 
         movq  $0xFFFF800000007E00,   %rsp
-        movq  main(%rip),       %rax
+        movq  StartKernel(%rip),       %rax
         pushq $0x08
         pushq %rax
         lretq  
+
+StartKernel:
+        .quad  main
 
 .align 8
 
