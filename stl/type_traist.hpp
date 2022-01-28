@@ -19,79 +19,79 @@ using true_type  = integral_constant<bool,true>;
 using false_type = integral_constant<bool,false>;
 
 template<typename>
-struct is_function : public false_type { };
+struct is_function : public false_type {};
 
 template<typename Res, typename... ArgTypes >
 struct is_function<Res(ArgTypes...) > : public true_type { };
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) & > : public true_type { };
+struct is_function<Res(ArgTypes...) & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) && > : public true_type { };
+struct is_function<Res(ArgTypes...) && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) > : public true_type { };
+struct is_function<Res(ArgTypes......) > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) & > : public true_type { };
+struct is_function<Res(ArgTypes......) & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) && > : public true_type { };
+struct is_function<Res(ArgTypes......) && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) const > : public true_type { };
+struct is_function<Res(ArgTypes...) const > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) const & > : public true_type { };
+struct is_function<Res(ArgTypes...) const & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) const && > : public true_type { };
+struct is_function<Res(ArgTypes...) const && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) const > : public true_type { };
+struct is_function<Res(ArgTypes......) const > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) const & > : public true_type { };
+struct is_function<Res(ArgTypes......) const & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) const && > : public true_type { };
+struct is_function<Res(ArgTypes......) const && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) volatile > : public true_type { };
+struct is_function<Res(ArgTypes...) volatile > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) volatile & > : public true_type { };
+struct is_function<Res(ArgTypes...) volatile & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) volatile && > : public true_type { };
+struct is_function<Res(ArgTypes...) volatile && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) volatile > : public true_type { };
+struct is_function<Res(ArgTypes......) volatile > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) volatile & > : public true_type { };
+struct is_function<Res(ArgTypes......) volatile & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) volatile && > : public true_type { };
+struct is_function<Res(ArgTypes......) volatile && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) const volatile > : public true_type { };
+struct is_function<Res(ArgTypes...) const volatile > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) const volatile & > : public true_type { };
+struct is_function<Res(ArgTypes...) const volatile & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes...) const volatile && > : public true_type { };
+struct is_function<Res(ArgTypes...) const volatile && > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) const volatile > : public true_type { };
+struct is_function<Res(ArgTypes......) const volatile > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) const volatile & > : public true_type { };
+struct is_function<Res(ArgTypes......) const volatile & > : public true_type {};
 
 template<typename Res, typename... ArgTypes >
-struct is_function<Res(ArgTypes......) const volatile && > : public true_type { };
+struct is_function<Res(ArgTypes......) const volatile && > : public true_type {};
 
 // is_const
 template<typename>
@@ -137,6 +137,27 @@ struct remove_cv
 template<typename T>
 using remove_cv_t = typename remove_cv<T>::type;
 
+template<typename T>
+struct remove_reference
+{
+    using type = T;
+};
+
+template<typename T>
+struct remove_reference<T&>
+{
+    using type = T;
+};
+
+template<typename T>
+struct remove_reference<T&&>
+{
+    using type = T;
+};
+
+template<typename T>
+using remove_reference_t = typename remove_reference<T>::type;
+
 // add_const
 template<typename T>
 struct add_const { using type = T const; };
@@ -159,6 +180,18 @@ struct add_cv
 
 template<typename T>
 using add_cv_t  = typename add_cv<T>::type;
+
+template<typename T>
+struct is_lvalue_reference : false_type{};
+
+template<typename T>
+struct is_lvalue_reference<T&> : true_type{};
+
+template<typename T>
+struct is_rvalue_reference : false_type{};
+
+template<typename T>
+struct is_rvalue_reference<T&&> : true_type{};
 
 template<typename T1,typename T2>
 struct is_same : false_type {};
@@ -197,11 +230,139 @@ struct enable_if{};
 template<typename T>
 struct enable_if<true,T> { using type = T;};
 
-template<bool V,typename T>
+template<bool V,typename T = void>
 using enable_if_t = typename enable_if<V,T>::type;
+
+template<bool V,typename T,typename U>
+struct conditional
+{
+    using type = T;
+};
+
+template<typename T,typename U>
+struct conditional<false,T,U>
+{
+    using type = U;
+};
+
+template<bool V,typename T,typename U>
+using conditional_t = typename conditional<V,T,U>::type;
 
 template<typename ...Args>
 using void_t = void;
 
+
+template<typename T,typename U = void>
+struct add_rvalue_reference
+{
+    using type = T&&;
+};
+
+template<typename T>
+struct add_rvalue_reference<T,enable_if_t<is_rvalue_reference<T>::value>>
+{
+    using type = T;
+};
+
+template<typename T>
+using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
+
+template<typename T,typename U = void>
+struct add_lvalue_reference
+{
+    using type = T&;
+};
+
+template<typename T>
+struct add_lvalue_reference<T,enable_if_t<is_lvalue_reference<T>::value>>
+{
+    using type = T;
+};
+
+template<typename T>
+using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
+
+template<typename T>
+struct add_pointer
+{
+    using type = remove_reference_t<T>*;
+};
+
+template<typename T>
+using add_pointer_t = typename add_pointer<T>::type;
+
+template<typename T>
+struct remove_extent
+{
+    using type = T;
+};
+
+template<typename T>
+struct remove_extent<T[]>
+{
+    using type = T;
+};
+
+template<typename T,size_t N>
+struct remove_extent<T[N]>
+{
+    using type = T;
+};
+
+template<typename T>
+using remove_extent_t = typename remove_extent<T>::type;
+
+template<typename T>
+struct remove_all_extent
+{
+    using type = T;
+};
+
+template<typename T>
+struct remove_all_extent<T[]>
+{
+    using type = typename remove_all_extent<T>::type;
+};
+
+template<typename T,size_t N>
+struct remove_all_extent<T[N]>
+{
+    using type = typename remove_all_extent<T>::type;
+};
+
+template<typename T>
+using remove_all_extent_t = typename remove_all_extent<T>::type;
+
+template<typename T,
+        bool IsArray    = is_array<T>::value,
+        bool IsFunction = is_function<T>::value>
+struct decay_selector;
+
+template<typename T>
+struct decay_selector<T,false,false>
+{
+    using type = remove_cv_t<T>;
+};
+
+template<typename T>
+struct decay_selector<T,true,false>
+{
+    using type = remove_extent_t<T>*;
+};
+
+template<typename T>
+struct decay_selector<T,false,true>
+{
+    using type = add_pointer_t<T>;
+};
+
+template<typename T>
+struct decay
+{
+    using type = typename decay_selector<remove_reference_t<T>>::type;
+};
+
+template<typename T>
+using decay_t = typename decay<T>::type;
 
 }
