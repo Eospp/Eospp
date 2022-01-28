@@ -38,7 +38,7 @@ Entry64:
         movq  %rax,             %ss
 
 
-        movq  $0xFFFF800000007E00,   %rsp
+        movq  $0xFFFF800000007E00,     %rsp
         movq  StartKernel(%rip),       %rax
         pushq $0x08
         pushq %rax
@@ -51,10 +51,10 @@ StartKernel:
 
 .org   0x1000
 
-PML4E:
-        .quad	                0x102007
+PML4:
+        .quad	                0x00102007
 	.fill	                255,8,0
-	.quad	                0x102007
+	.quad	                0x00102007
 	.fill	                255,8,0
 
 .org   0x2000
@@ -66,11 +66,11 @@ PDPTE:
 .org   0x3000
 
 PDE:
-        .quad	                0x000083	
-	.quad	                0x200083
-	.quad	                0x400083
-	.quad	                0x600083
-	.quad	                0x800083
+        .quad	                0x00000083	
+	.quad	                0x00200083
+	.quad	                0x00400083
+	.quad	                0x00600083
+	.quad	                0x00800083
 	.quad	                0xe0000083		/*0x a00000*/
 	.quad	                0xe0200083
 	.quad	                0xe0400083
