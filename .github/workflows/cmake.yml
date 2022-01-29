@@ -25,9 +25,9 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       working-directory: ./estl/test/build
-      run: pwd && cmake .. && make -j ${proc}
+      run: sudo cmake .. && sudo make -j ${proc}
 
     - name: Test
       working-directory: ./estl/test/build
-      run: make test
+      run: sudo make test
       
