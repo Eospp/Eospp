@@ -5,3 +5,7 @@ kernel/*.bin
 kernel/*.o
 kernel/*.s
 kernel/system
+
+.vscode/
+
+estl/test/build/
