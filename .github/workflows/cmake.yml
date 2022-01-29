@@ -1,0 +1,33 @@
+name: CMake
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install gtest
+      run : sudo apt install libgtest-dev
+   
+    - name: Create build directory
+      run:  sudo mkdir estl/test/build
+      
+    - name: Build
+      # Build your program with the given configuration
+      working-directory: ./estl/test/build
+      run: cmake .. && make -j ${proc}
+
+    - name: Test
+      working-directory: ./estl/test/build
+      run: make test
+      
