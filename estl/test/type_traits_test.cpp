@@ -36,11 +36,16 @@ TEST(TYPE_TRAITS,IS_TEST)
     EXPECT_FALSE(estd::is_lvalue_reference<int>::value);
     EXPECT_FALSE(estd::is_lvalue_reference<int&&>::value);
     EXPECT_TRUE (estd::is_lvalue_reference<int&>::value);
+    //is_same
+    bool value = estd::is_same<int,double>::value;
+    EXPECT_FALSE(value);
+         value = estd::is_same<int,const int>::value;
+    EXPECT_TRUE(value);
 }
 
 TEST(TYPE_TRAITS,ADD_TYPE_TEST)
 {
-
+    
 }
 
 TEST(TYPE_TRAITS,REMOVE_TYPE_TEST)
