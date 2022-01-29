@@ -16,8 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install gtest
-      run : sudo apt install libgtest-dev
+    - name: Install dependencies
+      run : sudo apt install libgtest-dev g++ cmake 
    
     - name: Create build directory
       run:  sudo mkdir estl/test/build
