@@ -223,6 +223,12 @@ struct is_array<T[]> : true_type {};
 template<typename T,size_t N>
 struct is_array<T[N]> : true_type {};
 
+template<typename T>
+struct is_member_pointer : false_type {};
+
+template<typename T,typename C>
+struct is_member_pointer<T C::*> : true_type {};
+
 
 template<bool,typename T = void>
 struct enable_if{};
