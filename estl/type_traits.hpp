@@ -1,6 +1,6 @@
 #pragma once
 #include "type.hpp"
-namespace std
+namespace estd
 {
 
 template<typename T,T V>
