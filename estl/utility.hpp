@@ -25,8 +25,7 @@ constexpr estd::remove_reference_t<T>&& move(T &&t)
     return static_cast<estd::remove_reference_t<T>&&>(t);
 }
 
-template<typename T>
-add_rvalue_reference_t<T> declval();
+
 
 template<typename T>
 void swap(T &lhs,T &rhs)

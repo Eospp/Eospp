@@ -18,6 +18,9 @@ struct integral_constant
 using true_type  = integral_constant<bool,true>;
 using false_type = integral_constant<bool,false>;
 
+template<bool V>
+using bool_constant = integral_constant<bool,V>;
+
 template<typename>
 struct is_function : public false_type {};
 
@@ -93,12 +96,18 @@ struct is_function<Res(ArgTypes......) const volatile & > : public true_type {};
 template<typename Res, typename... ArgTypes >
 struct is_function<Res(ArgTypes......) const volatile && > : public true_type {};
 
+template<typename T>
+constexpr inline bool is_function_v = is_function<T>::value;
+
 // is_const
 template<typename>
 struct is_const : public false_type { };
 
 template<typename T>
 struct is_const<T const> : public true_type { };
+
+template<typename T>
+constexpr inline bool is_const_v = is_const<T>::value;
 
 // is_volatile
 template<typename>
@@ -107,6 +116,8 @@ struct is_volatile : public false_type { };
 template<typename T>
 struct is_volatile<T volatile> : public true_type { };
 
+template<typename T>
+constexpr inline bool is_volatile_v = is_volatile<T>::value;
 // remove_const
 template<typename T>
 struct remove_const { using type = T; };
@@ -188,10 +199,16 @@ template<typename T>
 struct is_lvalue_reference<T&> : true_type{};
 
 template<typename T>
+constexpr inline bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
+
+template<typename T>
 struct is_rvalue_reference : false_type{};
 
 template<typename T>
 struct is_rvalue_reference<T&&> : true_type{};
+
+template<typename T>
+constexpr inline bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 
 template<typename T1,typename T2>
 struct is_same : false_type {};
@@ -199,11 +216,18 @@ struct is_same : false_type {};
 template<typename T>
 struct is_same<T,T> : true_type {};
 
+template<typename T1,typename T2>
+constexpr inline bool is_same_v = is_same<T1,T2>::value;
+
+
 template<typename T>
 struct is_pointer : false_type {};
 
 template<typename T>
 struct is_pointer<T*> : true_type{};
+
+template<typename T>
+constexpr inline bool is_pointer_v = is_pointer<T>::value;
 
 template<typename T>
 struct is_reference : false_type{};
@@ -215,6 +239,9 @@ template<typename T>
 struct is_reference<T&&> : true_type{};
 
 template<typename T>
+constexpr inline bool is_reference_v = is_reference<T>::value;
+
+template<typename T>
 struct is_array : false_type {};
 
 template<typename T>
@@ -224,11 +251,16 @@ template<typename T,size_t N>
 struct is_array<T[N]> : true_type {};
 
 template<typename T>
+constexpr inline bool is_array_v = is_array<T>::value;
+
+template<typename T>
 struct is_member_pointer : false_type {};
 
 template<typename T,typename C>
 struct is_member_pointer<T C::*> : true_type {};
 
+template<typename T>
+constexpr inline bool is_member_pointer_v = is_member_pointer<T>::value;
 
 template<bool,typename T = void>
 struct enable_if{};
@@ -370,5 +402,20 @@ struct decay
 
 template<typename T>
 using decay_t = typename decay<T>::type;
+
+template<typename T>
+add_rvalue_reference_t<T> declval();
+
+template<typename,typename T,typename ...Args>
+struct is_convertible_impl : false_type{};
+
+template<typename T,typename... Args>
+struct is_convertible_impl<void_t<decltype(T(declval<Args>()...))>,T,Args...> : true_type{};
+
+template<typename T,typename... Args>
+struct is_convertible : is_convertible_impl<void,T,Args...>{};
+
+template<typename T,typename... Args>
+constexpr inline bool is_convertible_v = is_convertible<T,Args...>::value;
 
 }
