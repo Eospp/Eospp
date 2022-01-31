@@ -17,6 +17,7 @@ endif()
 
 set(TEST_LISTS 
     type_traits_test
+    utility_test
     )
 
 foreach(Test ${TEST_LISTS})
