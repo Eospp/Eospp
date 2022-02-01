@@ -12,7 +12,7 @@ forward(estd::remove_reference_t<T>& t) noexcept
 
 template<typename T>
 constexpr T&&
-forward(typename estd::remove_reference_t<T>&& t) noexcept
+forward(estd::remove_reference_t<T>&& t) noexcept
 {
     static_assert(!estd::is_lvalue_reference<T>::value, "cant' cast rvalue refernce to lvalue reference");
 
@@ -25,6 +25,18 @@ constexpr estd::remove_reference_t<T>&& move(T &&t)
     return static_cast<estd::remove_reference_t<T>&&>(t);
 }
 
+class NoCopyAble
+{
+public:
+     NoCopyAble()  = default;
+     ~NoCopyAble() = default;
+
+     NoCopyAble(const NoCopyAble&) = delete;
+
+     NoCopyAble& operator=(const NoCopyAble&) = delete;
+     NoCopyAble& operator=(const NoCopyAble&) const = delete;
+     NoCopyAble& operator=(const NoCopyAble&) volatile = delete;
+};
 
 
 template<typename T>
