@@ -63,6 +63,11 @@ TEST(TYPE_TRAITS,IS_TEST)
     EXPECT_FALSE((estd::is_convertible_v<A,int,int,double>));
     EXPECT_TRUE ((estd::is_convertible_v<int,double>));
     EXPECT_TRUE ((estd::is_convertible_v<int,char>));
+    //is_void 
+    EXPECT_FALSE(estd::is_void_v<int>);
+    EXPECT_TRUE (estd::is_void_v<void>);
+    EXPECT_TRUE (estd::is_void_v<const void>);
+    EXPECT_TRUE (estd::is_void_v<const volatile void>);
 }
 
 TEST(TYPE_TRAITS,ADD_TYPE_TEST)
