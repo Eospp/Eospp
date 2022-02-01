@@ -15,5 +15,5 @@ mount boot.img /bootloader -t vfat -o loop
 echo "write loader.bin to boot.img"
 cp loader.bin /bootloader
 sync
-echo "umount boot.img"
-umount /bootloader 
+#echo "umount boot.img"
+#umount /bootloader 
