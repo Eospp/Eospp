@@ -418,4 +418,17 @@ struct is_convertible : is_convertible_impl<void,T,Args...>{};
 template<typename T,typename... Args>
 constexpr inline bool is_convertible_v = is_convertible<T,Args...>::value;
 
+
+template<typename T>
+struct is_void_helper : false_type{};
+
+template<>
+struct is_void_helper<void> : true_type{};
+
+template<typename T>
+struct is_void : is_void_helper<remove_cv_t<T>>{};
+
+template<typename T>
+constexpr inline bool is_void_v = is_void<T>::value;
+
 }
