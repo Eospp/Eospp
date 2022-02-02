@@ -406,6 +406,45 @@ using decay_t = typename decay<T>::type;
 template<typename T>
 add_rvalue_reference_t<T> declval();
 
+template<typename... T>
+struct or_;
+
+template<>
+struct or_<> : public false_type{};
+
+template<typename T>
+struct or_<T> : public T{};
+
+template<typename T1,typename T2>
+struct or_<T1,T2> : public conditional_t<T1::value,T1,T2>{};
+
+template<typename T1,typename T2,typename T3,typename... Args>
+struct or_<T1,T2,T3,Args...> : public conditional_t<T1::value,T1,or_<T2,T3,Args...>>{};
+
+template<typename... Args>
+constexpr inline bool or_v = or_<Args...>::value;
+
+template<typename... Args>
+struct and_;
+
+template<>
+struct and_<> : public true_type{};
+
+template<typename T>
+struct and_<T> : public T{};
+
+template<typename T1,typename T2>
+struct and_<T1,T2> : public conditional_t<T1::value,T1,T2>{};
+
+template<typename T1,typename T2,typename T3,typename ...Args>
+struct and_<T1,T2,T3,Args...> : public conditional_t<T1::value,T1,and_<T2,T3,Args...>>{};
+
+template<typename... Args>
+constexpr inline bool and_v = and_<Args...>::value;
+
+template<typename T>
+struct not_ : public bool_constant<!T::value>{};
+
 template<typename,typename T,typename ...Args>
 struct is_convertible_impl : false_type{};
 
@@ -418,6 +457,98 @@ struct is_convertible : is_convertible_impl<void,T,Args...>{};
 template<typename T,typename... Args>
 constexpr inline bool is_convertible_v = is_convertible<T,Args...>::value;
 
+template<typename T,typename... Args>
+struct is_constructible : public bool_constant<__is_constructible(T,Args...)>{};
+
+template<typename T,typename... Args>
+constexpr inline bool is_constructible_v = is_constructible<T,Args...>::value;
+
+template<typename T>
+struct is_default_constructible : public is_constructible<T>{};
+
+template<typename T>
+constexpr inline bool is_default_constructible_v = is_default_constructible<T>::value;
+
+template<typename... Args>
+struct conjunction : and_<Args...>{};
+
+template<typename... Args>
+struct disconjunction : or_<Args...>{};
+
+template<typename... Args>
+constexpr inline bool conjunction_v = conjunction<Args...>::value;
+
+template<typename... Args>
+constexpr inline bool disconjunction_v = disconjunction<Args...>::value;
+
+template<typename T>
+struct is_enum : public bool_constant<__is_enum(T)>{};
+
+template<typename T>
+struct is_class : public bool_constant<__is_class(T)>{};
+
+template<typename T>
+struct is_union : public bool_constant<__is_union(T)>{};
+
+template<typename T>
+constexpr inline bool is_enum_v = is_enum<T>::value;
+
+template<typename T>
+constexpr inline bool is_class_v = is_class<T>::value;
+
+template<typename T>
+constexpr inline bool is_union_v = is_union<T>::value;
+
+template<typename T>
+struct is_integral_helper : false_type{};
+
+template<>
+struct is_integral_helper<int8_t> : true_type{};
+
+template<>
+struct is_integral_helper<int16_t> : true_type{};
+
+template<>
+struct is_integral_helper<int32_t> : true_type{};
+
+template<>
+struct is_integral_helper<int64_t> : true_type{};
+
+template<>
+struct is_integral_helper<uint8_t> : true_type{};
+
+template<>
+struct is_integral_helper<uint16_t> : true_type{};
+
+template<>
+struct is_integral_helper<uint32_t> : true_type{};
+
+template<>
+struct is_integral_helper<uint64_t> : true_type{};
+
+template<typename T>
+struct is_integral : public is_integral_helper<remove_cv_t<T>>{};
+
+template<typename T>
+constexpr inline bool is_integral_v = is_integral<T>::value;
+
+template<typename T>
+struct is_float_helper : false_type{};
+
+template<>
+struct is_float_helper<float> : true_type{};
+
+template<>
+struct is_float_helper<double> : true_type{};
+
+template<>
+struct is_float_helper<long double> : true_type{};
+
+template<typename T>
+struct is_float : is_float_helper<remove_cv_t<T>>{};
+
+template<typename T>
+constexpr inline bool is_float_v = is_float<T>::value;
 
 template<typename T>
 struct is_void_helper : false_type{};
