@@ -68,6 +68,31 @@ TEST(TYPE_TRAITS,IS_TEST)
     EXPECT_TRUE (estd::is_void_v<void>);
     EXPECT_TRUE (estd::is_void_v<const void>);
     EXPECT_TRUE (estd::is_void_v<const volatile void>);
+    //is_integral
+    EXPECT_TRUE (estd::is_integral_v<int>);
+    EXPECT_TRUE (estd::is_integral_v<const int>);
+    EXPECT_TRUE (estd::is_integral_v<estd::uint64_t>);
+    EXPECT_FALSE(estd::is_integral_v<double>);
+    EXPECT_FALSE(estd::is_integral_v<A>);
+    //is_float
+    EXPECT_TRUE (estd::is_float_v<float>);
+    EXPECT_TRUE (estd::is_float_v<const double>);
+    EXPECT_FALSE(estd::is_float_v<A>);
+    //is_union
+    union B{};
+    EXPECT_FALSE(estd::is_union_v<int>);
+    EXPECT_FALSE(estd::is_union_v<double>);
+    EXPECT_TRUE (estd::is_union_v<B>);
+    //is_class
+    EXPECT_FALSE(estd::is_class_v<int>);
+    EXPECT_FALSE(estd::is_class_v<B>);
+    EXPECT_TRUE (estd::is_class_v<A>);
+    //is_enum
+    enum C{};
+    EXPECT_FALSE (estd::is_enum_v<int>);
+    EXPECT_FALSE (estd::is_enum_v<A>);
+    EXPECT_FALSE (estd::is_enum_v<B>);
+    EXPECT_TRUE  (estd::is_enum_v<C>);
 }
 
 TEST(TYPE_TRAITS,ADD_TYPE_TEST)
