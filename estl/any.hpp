@@ -24,6 +24,12 @@ public:
             value.content_ = nullptr;
         }
 
+        template<typename T,typename... Args>
+        any(T*,Args&&... args) : content_(new Holder<estd::remove_cv_t<estd::decay_t<T>>>(estd::forward<Args>(args)...))
+        {
+
+        }
+
         ~any()
         { 
             if(content_)
@@ -59,6 +65,13 @@ public:
         bool empty() const { return !content_; }
 
         void clear() { any().swap(*this); }
+
+        template<typename T,typename... Args>
+        void emplace(Args&&... args)
+        {
+            clear();
+            content_ = new Holder<estd::remove_cv_t<estd::decay_t<T>>>(estd::forward<Args>(args)...);
+        }
 
 private:    
         class PlaceHolder
@@ -102,6 +115,17 @@ T* any_cast(any &v) noexcept
     auto holder = dynamic_cast<any::Holder<T>*>(v.content_);
 
     return holder ? &holder->val : nullptr;
+}
+
+template<typename T,typename... Args>
+inline any make_any(Args&&... args)
+{
+    return any(static_cast<T*>(nullptr),estd::forward<Args>(args)...);
+}
+
+inline void swap(any &lhs,any &rhs)
+{
+    lhs.swap(rhs);
 }
 
 }
