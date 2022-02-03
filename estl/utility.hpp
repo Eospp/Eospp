@@ -47,4 +47,20 @@ void swap(T &lhs,T &rhs)
     rhs = estd::move(tmp);
 }
 
+template<typename T,T... idx>
+struct integer_sequence
+{
+    using value_type = T;
+    static constexpr size_t size() noexcept { return sizeof...(idx); }
+};
+
+template<size_t... idx>
+using index_sequence = integer_sequence<size_t,idx...>;
+
+template<typename T,T num>
+using make_integer_sequence = integer_sequence<T,__integer_pack(num)...>;
+
+template<size_t num>
+using make_index_sequence = make_integer_sequence<size_t,num>;
+
 }
