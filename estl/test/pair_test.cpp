@@ -29,6 +29,12 @@ TEST(PAIR_TEST,BAST_TEST)
     EXPECT_FALSE(p1 >  p3);
     EXPECT_FALSE(p1 >= p3);
 
-    
+    //swap
+    auto p5 = estd::make_pair(66,88);
+    estd::swap(p3,p5);
+    EXPECT_EQ(p3.first,66);
+    EXPECT_EQ(p3.second,88);
+    EXPECT_EQ(p5.first,1);
+    EXPECT_EQ(p5.second,3);
 
 }
