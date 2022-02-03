@@ -89,4 +89,10 @@ public:
     {
         return pair<estd::decay_t<T1>,estd::decay_t<T2>>(estd::forward<T1>(lhs),estd::forward<T2>(rhs));
     }
+
+    template<typename T1,typename T2>
+    inline void swap(pair<T1,T2> &lhs,pair<T1,T2> &rhs)
+    {
+        lhs.swap(rhs);
+    }
 }
