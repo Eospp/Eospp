@@ -19,6 +19,7 @@ set(TEST_LISTS
     type_traits_test
     utility_test
     atomic_test
+    pair_test
     )
 
 foreach(Test ${TEST_LISTS})
