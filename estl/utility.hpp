@@ -40,7 +40,7 @@ public:
 
 
 template<typename T>
-void swap(T &lhs,T &rhs)
+inline void swap(T &lhs,T &rhs)
 {
     T tmp(estd::move(lhs));
     lhs = estd::move(rhs);
