@@ -580,5 +580,19 @@ struct is_final : bool_constant<__is_final(T)>{};
 template<typename T>
 constexpr inline bool is_final_v = is_final<T>::value;
 
+template<size_t N,size_t I,typename T,typename... Args>
+struct nth_type
+{
+    using type = typename nth_type<N + 1,I,Args...>::type;
+};
+
+template<size_t N,typename T,typename... Args>
+struct nth_type<N,N,T,Args...>
+{
+    using type = T;
+};
+
+template<size_t N,typename... Args>
+using nth_type_t = typename nth_type<0,N,Args...>::type;
 
 }
