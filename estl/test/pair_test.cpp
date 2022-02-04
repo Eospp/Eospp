@@ -36,5 +36,9 @@ TEST(PAIR_TEST,BAST_TEST)
     EXPECT_EQ(p3.second,88);
     EXPECT_EQ(p5.first,1);
     EXPECT_EQ(p5.second,3);
+    
+    const auto &[first,second] = p5;
+    EXPECT_EQ(first,1);
+    EXPECT_EQ(second,3);
 
 }
