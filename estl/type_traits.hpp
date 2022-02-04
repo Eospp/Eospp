@@ -562,4 +562,23 @@ struct is_void : is_void_helper<remove_cv_t<T>>{};
 template<typename T>
 constexpr inline bool is_void_v = is_void<T>::value;
 
+template<typename T>
+struct is_empty : bool_constant<__is_empty(T)>{};
+
+template<typename T>
+constexpr inline bool is_empty_v = is_empty<T>::value;
+
+template<typename T>
+struct is_abstract : bool_constant<__is_abstract(T)>{};
+
+template<typename T>
+constexpr inline bool is_abstract_v = is_abstract<T>::value;
+
+template<typename T>
+struct is_final : bool_constant<__is_final(T)>{};
+
+template<typename T>
+constexpr inline bool is_final_v = is_final<T>::value;
+
+
 }
