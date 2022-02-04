@@ -21,6 +21,7 @@ set(TEST_LISTS
     atomic_test
     pair_test
     any_test
+    tuple_test
     )
 
 foreach(Test ${TEST_LISTS})
