@@ -63,4 +63,8 @@ using make_integer_sequence = integer_sequence<T,__integer_pack(num)...>;
 template<size_t num>
 using make_index_sequence = make_integer_sequence<size_t,num>;
 
+template<typename... Args>
+using index_sequence_for = make_index_sequence<sizeof...(Args)>;
+
+
 }
