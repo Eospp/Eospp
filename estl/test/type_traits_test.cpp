@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <type_traits.hpp>
-
+#include <pair.hpp>
 TEST(TYPE_TRAITS,IS_TEST)
 {
     //true_type
@@ -93,6 +93,18 @@ TEST(TYPE_TRAITS,IS_TEST)
     EXPECT_FALSE (estd::is_enum_v<A>);
     EXPECT_FALSE (estd::is_enum_v<B>);
     EXPECT_TRUE  (estd::is_enum_v<C>);
+    //is_empty
+    EXPECT_TRUE  (estd::is_empty_v<A>);
+    EXPECT_FALSE ((estd::is_empty_v<estd::pair<int,int>>));
+    //is_final
+    class D final{};
+    EXPECT_FALSE (estd::is_final_v<A>);
+    EXPECT_TRUE  (estd::is_final_v<D>);
+    //is_abstract
+    class E { virtual void func() = 0;};
+    EXPECT_TRUE  (estd::is_abstract_v<E>);
+    EXPECT_FALSE (estd::is_abstract_v<A>);
+
 }
 
 TEST(TYPE_TRAITS,ADD_TYPE_TEST)
@@ -107,7 +119,7 @@ TEST(TYPE_TRAITS,ADD_TYPE_TEST)
     EXPECT_EQ(typeid(int),typeid(estd::conditional_t<true,int,double>));
     EXPECT_EQ(typeid(double),typeid(estd::conditional_t<false,int,double>));
 }
-int func(int,int){}
+int func(int,int){ return 0; }
 TEST(TYPE_TRAITS,REMOVE_TYPE_TEST)
 {
     EXPECT_EQ(typeid(int),typeid(estd::remove_const_t<int const>));
