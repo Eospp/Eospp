@@ -254,13 +254,43 @@ template<typename T>
 constexpr inline bool is_array_v = is_array<T>::value;
 
 template<typename T>
-struct is_member_pointer : false_type {};
+struct is_member_pointer_helper : false_type{};
 
 template<typename T,typename C>
-struct is_member_pointer<T C::*> : true_type {};
+struct is_member_pointer_helper<T C::*> : true_type{};
+
+template<typename T>
+struct is_member_pointer : is_member_pointer_helper<remove_cv_t<T>> {};
 
 template<typename T>
 constexpr inline bool is_member_pointer_v = is_member_pointer<T>::value;
+
+//is_member_object_pointer
+template<typename T>
+struct is_member_object_pointer_helper : false_type{};
+
+template<typename T,typename C>
+struct is_member_object_pointer_helper<T C::*> : bool_constant<!is_function_v<T>>{};
+
+template<typename T>
+struct is_member_object_pointer : is_member_object_pointer_helper<remove_cv_t<T>>{};
+
+template<typename T>
+constexpr inline bool is_member_object_pointer_v = is_member_object_pointer<T>::value;
+
+//is_member_function_pointer
+template<typename T>
+struct is_member_function_pointer_helper : false_type{};
+
+template<typename T,typename C>
+struct is_member_function_pointer_helper<T C::*> : bool_constant<is_function_v<T>>{};
+
+template<typename T>
+struct is_member_function_pointer : is_member_function_pointer_helper<remove_cv_t<T>>{};
+
+template<typename T>
+constexpr inline bool is_member_function_pointer_v = is_member_function_pointer<T>::value;
+
 
 template<bool,typename T = void>
 struct enable_if{};
