@@ -23,9 +23,18 @@ template<size_t I,typename... Args>
 nth_type_t<I,Args...>& get(tuple<Args...> &t) noexcept;
 
 template<size_t I,typename... Args>
+const nth_type_t<I,Args...>& get(const tuple<Args...> &t) noexcept;
+
+template<size_t I,typename... Args>
 nth_type_t<I,Args...>&& get(tuple<Args...> &&t) noexcept;
 
+using swallow = bool[];
 
+template<typename... Args>
+inline void swap(tuple<Args...> &lhs,tuple<Args...> &rhs)
+{
+    swap_impl(lhs,rhs,index_sequence_for<Args...>());
+}
 
 template<size_t I,typename T,bool = is_empty_v<T> && !is_final_v<T>>
 class tuple_value
@@ -41,7 +50,7 @@ public:
     tuple_value(Args&&... args) : value(estd::forward<Args>(args)...){}
 
     tuple_value(const tuple_value&) = default;
-    tuple_value(tuple_value&&) = default;
+    tuple_value(tuple_value&&)      = default;
 
     constexpr T& get() noexcept
     {
@@ -86,31 +95,39 @@ template<size_t ...I,typename ...T>
 class tuple_impl<estd::index_sequence<I...>,T...> : public tuple_value<I,T>...
 {
 public:
-     constexpr tuple_impl() = default;
+     constexpr tuple_impl()                  = default;
      constexpr tuple_impl(const tuple_impl&) = default;
-     constexpr tuple_impl(tuple_impl&&) = default;
+     constexpr tuple_impl(tuple_impl&&)      = default;
 
-     template<typename... Args,typename = estd::enable_if_t<sizeof...(Args) == sizeof...(T)>>
+     template<typename... Args,
+              typename = estd::enable_if_t<sizeof...(Args) == sizeof...(T)>,
+              typename = estd::void_t<estd::enable_if_t<estd::is_constructible_v<Args,T>>...> >
      constexpr explicit tuple_impl(Args&&... values) : tuple_value<I,T>(estd::forward<Args>(values))...
      {
 
      }
      template<typename... Args>
-     constexpr explicit tuple_impl(const tuple<Args...> &values) : tuple_value<I,T>(get<I>(values))...
+     constexpr explicit tuple_impl(const tuple<Args...> &values) : tuple_value<I,T>(estd::get<I>(values))...
      {
 
      }
      template<typename... Args>
-     constexpr explicit tuple_impl(tuple<Args...> &&values) : tuple_value<I,T>(move(get<I>(values)))...
+     constexpr explicit tuple_impl(tuple<Args...> &&values) : tuple_value<I,T>(estd::move(estd::get<I>(values)))...
      {
 
      }
 
-    //  tuple_impl& operator=(const tuple_impl &t)
-    //  {
-    //      bool[] {tuple_value<I,T>::operator=(static_cast<tuple_value<I,T>&>(t).get()),true)...};
-    //      return *this;
-    //  }
+     tuple_impl& operator=(const tuple_impl &t)
+     {
+         swallow{(tuple_value<I,T>::operator=(static_cast<tuple_value<I,T>&>(t).get()),true)...};
+         return *this;
+     }
+
+     tuple_impl& operator=(tuple_impl &&t)
+     {
+         swallow{(tuple_value<I,T>::operator=(move(static_cast<tuple_value<I,T>>(t).get())),true)...};
+         return *this;
+     }
    
 };
 
@@ -120,14 +137,16 @@ class tuple
 {
 public:
       using value_type = tuple_impl<make_index_sequence<sizeof...(T)>,T...>;
+
       tuple(const tuple&) = default;
       tuple(tuple&&)      = default;
       constexpr tuple()   = default;
       constexpr tuple(const T& ...values) : impl_(values...){}
 
 
-      template<typename... Args,typename = enable_if_t<sizeof...(Args) == sizeof...(T)>>
-      constexpr tuple(Args&& ...values) : impl_(forward<Args>(values)...)
+      template<typename... Args,
+               typename = estd::enable_if_t<estd::is_constructible_v<value_type,Args...>> >
+      constexpr tuple(Args&& ...values) : impl_(estd::forward<Args>(values)...)
       {
 
       }
@@ -139,13 +158,28 @@ public:
       }
 
       template<typename... Args>
-      constexpr tuple(tuple<Args...> &&t) : impl_(t)
+      constexpr tuple(tuple<Args...> &&t) : impl_(move(t))
       {
 
       }
       constexpr size_t size() const noexcept
       {
           return sizeof...(T);
+      }
+
+      tuple& operator=(const tuple &t)
+      {
+          tuple(t).swap(*this);
+          return *this;
+      }
+      tuple& operator=(tuple &&t)
+      {
+          tuple(estd::move(t)).swap(*this);
+          return *this;
+      }
+      void swap(tuple &t)
+      {
+          estd::swap(*this,t);
       }
 
       template <size_t I, typename... Args>
@@ -186,5 +220,13 @@ inline tuple<Args...> make_tuple(Args&& ...args)
 {
     return tuple<Args...>(forward<Args>(args)...);
 }
+
+template<typename T,size_t... I>
+static inline void swap_impl(T &lhs,T &rhs,index_sequence<I...>)
+{
+    swallow{(swap(get<I>(lhs),get<I>(rhs)),true)...};
+}
+
+
 
 }
