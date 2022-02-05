@@ -54,8 +54,13 @@ TEST(TYPE_TRAITS,IS_TEST)
     {
         A(int ){}
         A(int,int){}
+        void func(){}
     };
     EXPECT_TRUE (estd::is_member_pointer_v<int(A::*)>);
+    //is_member_function_pointer
+    EXPECT_FALSE(estd::is_member_function_pointer_v<void(*)(int,int)>);
+    EXPECT_TRUE (estd::is_member_function_pointer_v<void(A::*)(int,int)>);
+    EXPECT_TRUE (estd::is_member_function_pointer_v<decltype(&A::func)>);
     //is_convertible
     EXPECT_TRUE ((estd::is_convertible_v<A,int,int>));
     EXPECT_TRUE ((estd::is_convertible_v<A,int>));
