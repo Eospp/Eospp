@@ -15,8 +15,7 @@ public:
         content_(value.content_ ? value.content_->clone() : nullptr){}
 
         template<typename T,
-                 typename = estd::enable_if_t<!estd::is_same_v<any&,T>>,
-                 typename = estd::enable_if_t<!estd::is_const_v<T>>>
+                 typename = estd::enable_if_t<!estd::is_same_v<any,estd::decay_t<T>>>>
         any(T &&value) : content_(new Holder<estd::decay_t<T>>(estd::move(value))){}
 
         any(any &&value) noexcept : content_(value.content_)
@@ -55,16 +54,20 @@ public:
             return *this;
         }
 
-        any& operator=(any &&rhs) noexcept
+        operator bool() const
         {
-            rhs.swap(*this);
-            any().swap(rhs);
-            return *this;
+            return !empty();
         }
 
-        bool empty() const { return !content_; }
+        bool empty() const 
+        { 
+            return !content_; 
+        }
 
-        void clear() { any().swap(*this); }
+        void clear() 
+        { 
+            any().swap(*this); 
+        }
 
         template<typename T,typename... Args>
         void emplace(Args&&... args)
