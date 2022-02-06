@@ -41,5 +41,28 @@ TEST(ANY_TEST,BASE_TEST)
     a = estd::any_cast<A>(v);
     ASSERT_TRUE(a != nullptr);
     EXPECT_EQ(a->m_a,5);
-    
+    //copy construtor
+    estd::any v2 = 2;
+    estd::any v3(v2);
+    p      = estd::any_cast<int>(v3);
+    ASSERT_TRUE(p != nullptr);
+    EXPECT_EQ(*p,2);
+    //move construtor
+    estd::any v4(estd::move(v3));
+    EXPECT_TRUE(v3.empty());
+    p      = estd::any_cast<int>(v4);
+    ASSERT_TRUE(p != nullptr);
+    EXPECT_EQ(*p,2);
+    //copy opeator=
+    estd::any v5 = v4;
+    p      = estd::any_cast<int>(v5);
+    ASSERT_TRUE(p != nullptr);
+    EXPECT_EQ(*p,2);
+    EXPECT_TRUE(v4);
+    //move operator=
+    estd::any v6 = estd::move(v5);
+    EXPECT_FALSE(v5);
+    p      = estd::any_cast<int>(v6);
+    ASSERT_TRUE(p != nullptr);
+    EXPECT_EQ(*p,2);
 }
