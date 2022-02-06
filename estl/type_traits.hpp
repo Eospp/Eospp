@@ -219,12 +219,14 @@ struct is_same<T,T> : true_type {};
 template<typename T1,typename T2>
 constexpr inline bool is_same_v = is_same<T1,T2>::value;
 
+template<typename T>
+struct is_pointer_helper : false_type{};
 
 template<typename T>
-struct is_pointer : false_type {};
+struct is_pointer_helper<T*> : true_type{};
 
 template<typename T>
-struct is_pointer<T*> : true_type{};
+struct is_pointer : is_pointer_helper<remove_cv_t<T>> {};
 
 template<typename T>
 constexpr inline bool is_pointer_v = is_pointer<T>::value;
