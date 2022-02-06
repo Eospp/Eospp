@@ -22,6 +22,7 @@ set(TEST_LISTS
     pair_test
     any_test
     tuple_test
+    functional_test
     )
 
 foreach(Test ${TEST_LISTS})
