@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <functional.hpp>
+#include <tuple.hpp>
 
 int func(int a,int b)
 {
@@ -46,6 +47,9 @@ TEST(FUNCTIONAL_TEST,INVOKE_TEST)
     auto callable = [](int a,int b){ return a + b;};
     
     EXPECT_EQ(estd::invoke(callable,1,2),3);
+
+    estd::tuple<int,int> t{1,2};
+    EXPECT_EQ(estd::apply(func,t),3);
 }
 
 TEST(FUNCTIONAL_TEST,FUNCTION_TEST)
