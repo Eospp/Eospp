@@ -1,13 +1,14 @@
 #pragma once
 #include <utility.hpp>
 #include <type_traits.hpp>
+#include <tuple.hpp>
 namespace estd{
 
 template<typename Fn,typename = void>
 struct invoke_function
 {
     template<typename... Args>
-    static decltype(auto) call(const Fn &fn,Args&&... args)
+    static constexpr decltype(auto) call(const Fn &fn,Args&&... args)
     {
         return fn(estd::forward<Args>(args)...);
     }
@@ -16,7 +17,7 @@ template<typename Fn>
 struct invoke_function<Fn,void_t<enable_if_t<is_pointer_v<decay_t<Fn>>>>>
 {
     template<typename... Args>
-    static decltype(auto) call(const Fn &fn,Args&&... args)
+    static constexpr decltype(auto) call(const Fn &fn,Args&&... args)
     {
         return (*fn)(estd::forward<Args>(args)...);
     }
@@ -25,13 +26,13 @@ struct invoke_function<Fn,void_t<enable_if_t<is_pointer_v<decay_t<Fn>>>>>
 struct invoke_member_function
 {
     template<typename Fn,typename T,typename... Args>
-    static auto call(Fn &&fn,T &&obj,Args&& ...args) -> decltype((obj.*fn)(estd::forward<Args>(args)...))
+    static constexpr auto call(Fn &&fn,T &&obj,Args&& ...args) -> decltype((obj.*fn)(estd::forward<Args>(args)...))
     {
         return (obj.*fn)(estd::forward<Args>(args)...);
     }
     
     template<typename Fn,typename T,typename... Args>
-    static auto call(Fn &&fn,T &&obj,Args&& ...args) -> decltype((obj->*fn)(estd::forward<Args>(args)...))
+    static constexpr auto call(Fn &&fn,T &&obj,Args&& ...args) -> decltype((obj->*fn)(estd::forward<Args>(args)...))
     {
         return (obj->*fn)(estd::forward<Args>(args)...);
     }
@@ -58,9 +59,21 @@ struct invoke_impl<Fn,T,Args...> : invoke_helper<Fn,T>
 {};
 
 template<typename Fn,typename... Args>
-decltype(auto) invoke(Fn &&fn,Args&&... args)
+constexpr decltype(auto) invoke(Fn &&fn,Args&&... args)
 {
     return invoke_impl<Fn,Args...>::call(estd::forward<Fn>(fn),estd::forward<Args>(args)...);
+}
+
+template<typename Fn,typename T,estd::size_t... I>
+constexpr decltype(auto) apply_impl(Fn &&fn,T &&t,estd::index_sequence<I...>)
+{
+    return invoke(fn,estd::get<I>(t)...);
+}
+
+template<typename Fn,typename T>
+constexpr decltype(auto) apply(Fn &&fn,T &&t)
+{
+    return apply_impl(estd::forward<Fn>(fn),estd::forward<T>(t),estd::make_index_sequence<t.size()>());
 }
 
 template<typename R,typename... Args>
