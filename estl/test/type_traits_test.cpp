@@ -55,6 +55,8 @@ TEST(TYPE_TRAITS,IS_TEST)
         A(int ){}
         A(int,int){}
         void func(){}
+        A& operator=(int){ return *this;}
+        A& operator=(double){ return *this;}
     };
     EXPECT_TRUE (estd::is_member_pointer_v<int(A::*)>);
     //is_member_function_pointer
@@ -109,7 +111,10 @@ TEST(TYPE_TRAITS,IS_TEST)
     class E { virtual void func() = 0;};
     EXPECT_TRUE  (estd::is_abstract_v<E>);
     EXPECT_FALSE (estd::is_abstract_v<A>);
-
+    //is_assignable
+    EXPECT_FALSE ((estd::is_assignable_v<E,D>));
+    EXPECT_TRUE  ((estd::is_assignable_v<A,int>));
+    EXPECT_TRUE  ((estd::is_assignable_v<A,double>));
 }
 
 TEST(TYPE_TRAITS,ADD_TYPE_TEST)
@@ -123,6 +128,8 @@ TEST(TYPE_TRAITS,ADD_TYPE_TEST)
 
     EXPECT_EQ(typeid(int),typeid(estd::conditional_t<true,int,double>));
     EXPECT_EQ(typeid(double),typeid(estd::conditional_t<false,int,double>));
+
+    EXPECT_TRUE((estd::is_same_v<int&&,decltype(estd::declval<int>())>));
 }
 int func(int,int){ return 0; }
 TEST(TYPE_TRAITS,REMOVE_TYPE_TEST)
