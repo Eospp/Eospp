@@ -66,5 +66,109 @@ using make_index_sequence = make_integer_sequence<size_t,num>;
 template<typename... Args>
 using index_sequence_for = make_index_sequence<sizeof...(Args)>;
 
+template<typename T,typename U,typename Result>
+struct binary_function
+{
+    using first_argument_type  = T;
+    using second_argument_type = U;
+    using result_type          = Result;
+};
+
+template<typename T,typename Result>
+struct unary_function
+{
+    using arument_type = T;
+    using result_type  = Result;
+};
+
+template<typename T>
+struct plus : binary_function<T,T,T>
+{
+    T operator()(const T& x,const T& y) const
+    {
+        return x + y;
+    }
+};
+
+template<typename T>
+struct minus : binary_function<T,T,T>
+{
+    T operator()(const T& x,const T& y) const
+    {
+        return x - y;
+    }
+};
+
+template<typename T>
+struct multiplies : binary_function<T,T,T>
+{
+    T operator()(const T& x,const T& y) const
+    {
+        return x * y;
+    }
+};
+
+template<typename T>
+struct divides : binary_function<T,T,T>
+{
+    T operator()(const T& x,const T& y) const
+    {
+        return x / y;
+    }
+};
+
+template<typename T>
+struct modulus : binary_function<T,T,T>
+{
+    T operator()(const T& x,const T& y) const
+    {
+        return x % y;
+    }
+};
+
+template<typename T>
+struct negate : unary_function<T,T>
+{
+    T operator()(const T& x) const
+    {
+        return -x;
+    }
+};
+
+template<typename T>
+struct greater : binary_function<T,T,bool>
+{
+    bool operator()(const T& x,const T& y) const
+    {
+        return x > y;
+    }
+};
+
+template<typename T>
+struct less : binary_function<T,T,bool>
+{
+    bool operator()(const T& x,const T& y) const
+    {
+        return x < y;
+    }
+};
+
+template<typename T>
+struct greater_equal : binary_function<T,T,bool>
+{
+    bool operator()(const T& x,const T& y) const
+    {
+        return x >= y;
+    }
+};
+
+template<typename T>
+struct less_equal : binary_function<T,T,bool>
+{
+    bool operator()(const T& x,const T& y) const
+    {
+        return x <= y;
+    }
+};
 
 }
