@@ -23,6 +23,7 @@ set(TEST_LISTS
     any_test
     tuple_test
     functional_test
+    memory_test
     )
 
 foreach(Test ${TEST_LISTS})
