@@ -612,6 +612,18 @@ struct is_final : bool_constant<__is_final(T)>{};
 template<typename T>
 constexpr inline bool is_final_v = is_final<T>::value;
 
+template<typename T,typename U,typename = void>
+struct is_assignable_helper : false_type{};
+
+template<typename T,typename U>
+struct is_assignable_helper<T,U,void_t< decltype(declval<T>() = declval<U>()) >> : true_type{};
+
+template<typename T,typename U>
+struct is_assignable : is_assignable_helper<T,U>{};
+
+template<typename T,typename U>
+constexpr inline bool is_assignable_v = is_assignable<T,U>::value;
+
 template<size_t N,size_t I,typename T,typename... Args>
 struct nth_type
 {
