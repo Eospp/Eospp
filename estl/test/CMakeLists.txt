@@ -12,7 +12,7 @@ if(GTest_FOUND)
 message(STATUS "found gtest,subsequently build estl unit test")
 enable_testing()
 else()
-message(FATAL_ERROR  "can't find GTest,please install it first")
+message(FATAL_ERROR  "can't find gtest,please install it first")
 endif()
 
 set(TEST_LISTS 
