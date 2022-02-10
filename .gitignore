@@ -6,6 +6,9 @@ kernel/*.o
 kernel/*.s
 kernel/system
 
-.vscode/
 
+.vscode/
+estl/test/.cache
 estl/test/build/
+compile_commands.json
+.cache/
