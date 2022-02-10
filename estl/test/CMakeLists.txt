@@ -8,6 +8,8 @@ include_directories(${CMAKE_SOURCE_DIR}/../)
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++17)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(GTest_FOUND)
 message(STATUS "found gtest,subsequently build estl unit test")
 enable_testing()
