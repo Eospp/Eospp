@@ -1,17 +1,26 @@
 #include <gtest/gtest.h>
 #include <memory.hpp>
 #include <memory>
-TEST(MEMORY_TEST,UNIQUE_PTR_TEST)
+
+TEST(UNIQUE_PTR_TEST,CONSTRUTOR_TEST)
 {
     //construtor
-    {
-        estd::unique_ptr<int> p(new int(5));
-        estd::unique_ptr<int> p1 = estd::make_unique<int>(5);
-        EXPECT_FALSE(p  == nullptr);
-        EXPECT_FALSE(p1 == nullptr);
-        EXPECT_EQ(*p,5);
-        EXPECT_EQ(*p1,5);
-    }
+    estd::unique_ptr<int> p(new int(5));
+    estd::unique_ptr<int> p1 = estd::make_unique<int>(5);
+    EXPECT_FALSE(p  == nullptr);
+    EXPECT_FALSE(p1 == nullptr);
+    EXPECT_EQ(*p,5);
+    EXPECT_EQ(*p1,5);
+}
+TEST(UNIQUE_PTR_TEST,MOVE_CONSTUTOR_TEST)
+{
+    estd::unique_ptr<int> p  = estd::make_unique<int>(5);
+    estd::unique_ptr<int> p1(estd::move(p));
+    
+}
+TEST(MEMORY_TEST,UNIQUE_PTR_TEST)
+{
+    
     //move construtor
     {
         estd::unique_ptr<int> p  = estd::make_unique<int>(5);

@@ -1,68 +1,64 @@
-#include <atomic.hpp>
 #include <gtest/gtest.h>
+#include <atomic.hpp>
 
-
-TEST(ATMOIC_TEST,BASE_TEST)
-{
+TEST(ATMOIC_TEST, BASE_TEST) {
     estd::atomic<int> v(1);
-    EXPECT_EQ(v.load(),1);
+    EXPECT_EQ(v.load(), 1);
     //++
-    EXPECT_EQ(v++,1);
-    EXPECT_EQ(++v,3);
+    EXPECT_EQ(v++, 1);
+    EXPECT_EQ(++v, 3);
     v.store(5);
-    EXPECT_EQ(v.load(),5);
+    EXPECT_EQ(v.load(), 5);
     //--
-    EXPECT_EQ(v--,5);
-    EXPECT_EQ(--v,3);
+    EXPECT_EQ(v--, 5);
+    EXPECT_EQ(--v, 3);
     //+=
-    EXPECT_EQ(v += 5,8);
+    EXPECT_EQ(v += 5, 8);
     //-=
-    EXPECT_EQ(v -= 6,2);
+    EXPECT_EQ(v -= 6, 2);
     //|=
-    EXPECT_EQ(v |= 1,3);
-    //&= 
-    EXPECT_EQ(v &= 4,0);
+    EXPECT_EQ(v |= 1, 3);
+    //&=
+    EXPECT_EQ(v &= 4, 0);
     //^=
     v.store(1);
-    EXPECT_EQ(v ^= 12,13);
-    //fetch_add
+    EXPECT_EQ(v ^= 12, 13);
+    // fetch_add
     v.store((5));
-    EXPECT_EQ(v.fetch_add(5),5);
-    EXPECT_EQ(v.load(),10);
-    //fetch_sub
-    EXPECT_EQ(v.fetch_sub(5),10);
-    EXPECT_EQ(v.fetch_sub(5),5);
-    EXPECT_EQ(v.load(),0);
-    //fetch_and
+    EXPECT_EQ(v.fetch_add(5), 5);
+    EXPECT_EQ(v.load(), 10);
+    // fetch_sub
+    EXPECT_EQ(v.fetch_sub(5), 10);
+    EXPECT_EQ(v.fetch_sub(5), 5);
+    EXPECT_EQ(v.load(), 0);
+    // fetch_and
     v.store(2);
-    EXPECT_EQ(v.fetch_and(1),2);
-    EXPECT_EQ(v.load(),0);
-    //fetch_or
+    EXPECT_EQ(v.fetch_and(1), 2);
+    EXPECT_EQ(v.load(), 0);
+    // fetch_or
     v.store(1);
-    EXPECT_EQ(v.fetch_or(2),1);
-    EXPECT_EQ(v.load(),3);
-    //fetch_xor
+    EXPECT_EQ(v.fetch_or(2), 1);
+    EXPECT_EQ(v.load(), 3);
+    // fetch_xor
     v.store(1);
-    EXPECT_EQ(v.fetch_xor(1),1);
-    EXPECT_EQ(v.load(),0);
-    //exchange
+    EXPECT_EQ(v.fetch_xor(1), 1);
+    EXPECT_EQ(v.load(), 0);
+    // exchange
     v.store(10);
-    EXPECT_EQ(v.exchange(20),10);
-    EXPECT_EQ(v.load(),20);
-    //compare_exchange_weak
+    EXPECT_EQ(v.exchange(20), 10);
+    EXPECT_EQ(v.load(), 20);
+    // compare_exchange_weak
     int value;
 
-    do
-    {
-        if((value = v.load()) == 0)
-            break;
-    }while(!v.compare_exchange_weak(value,0,estd::memory_order_acq_rel,estd::memory_order_relaxed));
+    do {
+        if ((value = v.load()) == 0) break;
+    } while (
+        !v.compare_exchange_weak(value, 0, estd::memory_order_acq_rel, estd::memory_order_relaxed));
 
-    EXPECT_EQ(v.load(),0);
-    
-    //compare_exchange_strong
+    EXPECT_EQ(v.load(), 0);
+
+    // compare_exchange_strong
     value = v.load();
-    v.compare_exchange_strong(value,20,estd::memory_order_acq_rel,estd::memory_order_relaxed);
-    EXPECT_EQ(v.load(),20);
-
+    v.compare_exchange_strong(value, 20, estd::memory_order_acq_rel, estd::memory_order_relaxed);
+    EXPECT_EQ(v.load(), 20);
 }
