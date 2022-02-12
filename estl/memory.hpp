@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic.hpp>
 #include <tuple.hpp>
 #include <type_traits.hpp>
 namespace estd {
@@ -59,8 +60,8 @@ struct ptr_type<T, D, estd::void_t<typename estd::remove_reference_t<D>::pointer
 template <typename T, typename D>
 class unique_ptr_impl {
 public:
-    using pointer = typename ptr_type<T, D>::type;
-
+    using pointer      = typename ptr_type<T, D>::type;
+    using deleter_type = D;
     unique_ptr_impl() = default;
     unique_ptr_impl(pointer p) {
         ptr() = p;
@@ -74,15 +75,15 @@ public:
     pointer ptr() const {
         return estd::get<0>(data_);
     }
-    D &deleter() {
+    deleter_type &deleter() {
         return estd::get<1>(data_);
     }
-    const D &deleter() const {
+    const deleter_type &deleter() const {
         return estd::get<1>(data_);
     }
 
 private:
-    estd::tuple<pointer, D> data_;
+    estd::tuple<pointer, deleter_type> data_;
 };
 
 template <typename T, typename D = default_deleter<T>>
@@ -100,6 +101,12 @@ public:
     unique_ptr(pointer p, remove_reference_t<D> &&d) noexcept
         : impl_(estd::move(p), estd::move(d)) {
         static_assert(!estd::is_reference_v<deleter_type>, "rvalue deleter bound to reference");
+    }
+
+    template<typename U,typename E,typename = estd::enable_if_t<estd::is_base_of_v<T,U>>>
+    unique_ptr(unique_ptr<U,E> &&u) noexcept : impl_(u.release(),estd::move(u.get_deleter()))
+    {
+
     }
 
     unique_ptr(unique_ptr &&p) noexcept
@@ -307,6 +314,266 @@ inline bool operator>(const estd::unique_ptr<T, D> &lhs, const estd::unique_ptr<
 template <typename T, typename D>
 inline bool operator>=(const estd::unique_ptr<T, D> &lhs, const estd::unique_ptr<T, D> &rhs) {
     return estd::greater_equal<typename estd::unique_ptr<T, D>::pointer>()(lhs.get(), rhs.get());
+}
+
+class count_base : NoCopyAble {
+public:
+    using count_type = estd::atomic<uint64_t>;
+
+    count_base() : shared_count_(1), weak_count_(1) {}
+
+    uint64_t get_shared_count() const {
+        return shared_count_.load(estd::memory_order_relaxed);
+    }
+
+    uint64_t get_weak_count() const {
+        return weak_count_.load(estd::memory_order_relaxed);
+    }
+
+    void copy_weak_ref() {
+        ++weak_count_;
+    }
+    void copy_shared_ref() {
+        ++shared_count_;
+    }
+
+    uint64_t shared_release() {
+        return --shared_count_;
+    }
+    uint64_t weak_release() {
+        return --weak_count_;
+    }
+
+    virtual void dispose() = 0;
+    virtual void distory() = 0;
+
+private:
+    count_type shared_count_;
+    count_type weak_count_;
+};
+
+template <typename T, typename Deleter = default_deleter<T>>
+class count_impl : public count_base {
+public:
+    using element_type = T;
+    using reference_type = T &;
+    using pointer_type = T *;
+
+    count_impl(T *ptr, const Deleter &d) : ptr_(ptr), deleter_(d) {}
+
+    count_impl(T *ptr, Deleter &&d) : ptr_(ptr), deleter_(estd::forward<Deleter>(d)) {}
+
+    virtual void dispose() override {
+        if (ptr_) {
+            deleter_(ptr_);
+        }
+    }
+
+    virtual void distory() override {
+        delete this;
+    }
+
+private:
+    pointer_type ptr_;
+    Deleter deleter_;
+};
+
+template <typename T>
+class weak_ptr;
+
+template <typename T>
+class shared_ptr;
+
+class shared_count {
+public:
+    shared_count() : impl_(nullptr) {}
+
+    template <typename T, typename Deleter = default_deleter<T>>
+    shared_count(T *ptr, Deleter &&d)
+        : impl_(new count_impl<T, estd::decay_t<Deleter>>(ptr, estd::forward<Deleter>(d))) {}
+
+    shared_count(const shared_count &rhs) : impl_(rhs.impl_) {
+        if (impl_) {
+            impl_->copy_shared_ref();
+        }
+    }
+
+    shared_count(shared_count &&rhs) noexcept : impl_(rhs.impl_) {
+        rhs.impl_ = nullptr;
+    }
+
+    shared_count &operator=(shared_count rhs) {
+        swap(rhs);
+        return *this;
+    }
+
+    void swap(shared_count &rhs) noexcept {
+        estd::swap(impl_, rhs.impl_);
+    }
+
+    uint64_t use_count() const {
+        return impl_ ? impl_->get_shared_count() : 0;
+    }
+
+    void release() {
+        if (impl_ && impl_->shared_release() == 0) {
+            impl_->dispose();
+
+            if (impl_->weak_release() == 0) {
+                impl_->distory();
+            }
+            impl_ = nullptr;
+        }
+    }
+
+    ~shared_count() {
+        release();
+    }
+
+private:
+    count_base *impl_;
+};
+
+inline void swap(shared_count &lhs, shared_count &rhs) noexcept {
+    lhs.swap(rhs);
+}
+
+class weak_count {
+public:
+    uint64_t use_count() const {
+        return impl_ ? impl_->get_weak_count() : 0;
+    }
+
+private:
+    count_base *impl_;
+};
+
+template <typename T>
+class shared_ptr {
+public:
+    using element_type = T;
+    using reference_type = T &;
+    using pointer_type = T *;
+
+    shared_ptr() : ptr_(nullptr), refcount_() {}
+
+    shared_ptr(const shared_ptr &rhs) : ptr_(rhs.ptr_), refcount_(rhs.refcount_) {}
+
+    shared_ptr(shared_ptr &&rhs) noexcept : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) 
+    {
+        rhs.ptr_ = nullptr;
+    }
+
+    template <typename Deleter = default_deleter<T>>
+    shared_ptr(T *ptr, Deleter &&deleter = Deleter())
+        : ptr_(ptr), refcount_(ptr, estd::forward<Deleter>(deleter)) {}
+
+    template <typename U,
+              typename Deleter = default_deleter<U>,
+              typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
+    shared_ptr(U *ptr, Deleter &&deleter = Deleter())
+        : ptr_(ptr), refcount_(ptr, estd::forward<Deleter>(deleter)) {}
+
+    template <typename U, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
+    shared_ptr(const shared_ptr<U> &rhs) : ptr_(rhs.ptr_), refcount_(rhs.refcount_) {}
+
+    template <typename U, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
+    shared_ptr(shared_ptr<U> &&rhs) noexcept
+        : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) 
+    {
+        rhs.ptr_ = nullptr;
+    }
+
+    shared_ptr &operator=(shared_ptr rhs) noexcept {
+        swap(rhs);
+        return *this;
+    }
+
+    template <typename U, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
+    shared_ptr &operator=(shared_ptr<U> rhs) noexcept {
+        swap(rhs);
+        return *this;
+    }
+
+    shared_ptr &operator=(nullptr_t) noexcept {
+        estd::shared_ptr<T>().swap(*this);
+        return *this;
+    }
+
+    void swap(shared_ptr &rhs) {
+        estd::swap(refcount_, rhs.refcount_);
+        estd::swap(ptr_, rhs.ptr_);
+    }
+
+    uint64_t use_count() const {
+        return refcount_.use_count();
+    }
+    template <typename U, typename Deleter = default_deleter<T>>
+    void reset(U *ptr = nullptr, Deleter &&deleter = Deleter()) {
+        shared_count(ptr, estd::forward<Deleter>(deleter)).swap(refcount_);
+    }
+
+    bool unique() const noexcept {
+        return use_count() == 1;
+    }
+
+    pointer_type get() const noexcept {
+        return ptr_;
+    }
+
+    reference_type operator*() const noexcept {
+        return *get();
+    }
+
+    pointer_type operator->() const noexcept {
+        return get();
+    }
+
+    explicit operator bool() const noexcept {
+        return get() == pointer_type() ? false : true;
+    }
+
+private:
+    pointer_type ptr_;
+    shared_count refcount_;
+};
+
+template <typename T>
+class weak_ptr {
+public:
+    using element_type = T;
+    using reference_type = T &;
+    using pointer_type = T *;
+
+private:
+    pointer_type ptr_;
+    weak_count refcount_;
+};
+
+template <typename T>
+inline bool operator==(const shared_ptr<T> &lhs, nullptr_t) {
+    return !lhs;
+}
+
+template <typename T>
+inline bool operator!=(const shared_ptr<T> &lhs, nullptr_t) {
+    return static_cast<bool>(lhs);
+}
+
+template <typename T>
+inline bool operator==(nullptr_t, const shared_ptr<T> &lhs) {
+    return !lhs;
+}
+
+template <typename T>
+inline bool operator!=(nullptr_t, const shared_ptr<T> &lhs) {
+    return static_cast<bool>(lhs);
+}
+
+
+template <typename T, typename... Args>
+estd::shared_ptr<T> make_shared(Args &&... args) {
+    return estd::shared_ptr<T>(new T(estd::forward<Args>(args)...));
 }
 
 }   // namespace estd
