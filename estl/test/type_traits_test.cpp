@@ -119,6 +119,10 @@ TEST(TYPE_TRAITS, IS_TEST) {
     EXPECT_FALSE((estd::is_assignable_v<E, D>));
     EXPECT_TRUE((estd::is_assignable_v<A, int>));
     EXPECT_TRUE((estd::is_assignable_v<A, double>));
+    //is_base_of
+    struct driver : A{};
+    EXPECT_TRUE((estd::is_base_of_v<A,driver>));
+    EXPECT_FALSE((estd::is_base_of_v<int,A>));
 }
 
 TEST(TYPE_TRAITS, ADD_TYPE_TEST) {
