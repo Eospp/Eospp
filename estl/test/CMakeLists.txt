@@ -6,7 +6,7 @@ find_package(GTest REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/../)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -28,9 +28,19 @@ set(TEST_LISTS
     memory_test
     )
 
-foreach(Test ${TEST_LISTS})
+set(MEMORY_TESTS
+    memory_test)
+
+    foreach(Test ${TEST_LISTS})
     message(STATUS "build ${Test}")
     add_executable(${Test} ${Test}.cpp)
     target_link_libraries(${Test} GTest::GTest GTest::Main)    
     add_test(NAME ${Test} COMMAND ${Test})
+endforeach()
+
+find_program(CMAKE_MEMORYCHECK_COMMAND valgrind)
+set(memcheck_command ${CMAKE_MEMORYCHECK_COMMAND} ${CMAKE_MEMORYCHECK_COMMAND_OPTIONS} --leak-check=full --error-exitcode=1)
+
+foreach(src ${MEMORY_TESTS})
+	add_test(${src}-memory-check ${memcheck_command} ./${src})
 endforeach()
