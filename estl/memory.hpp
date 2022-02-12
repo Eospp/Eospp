@@ -60,7 +60,7 @@ struct ptr_type<T, D, estd::void_t<typename estd::remove_reference_t<D>::pointer
 template <typename T, typename D>
 class unique_ptr_impl {
 public:
-    using pointer      = typename ptr_type<T, D>::type;
+    using pointer = typename ptr_type<T, D>::type;
     using deleter_type = D;
     unique_ptr_impl() = default;
     unique_ptr_impl(pointer p) {
@@ -103,11 +103,8 @@ public:
         static_assert(!estd::is_reference_v<deleter_type>, "rvalue deleter bound to reference");
     }
 
-    template<typename U,typename E,typename = estd::enable_if_t<estd::is_base_of_v<T,U>>>
-    unique_ptr(unique_ptr<U,E> &&u) noexcept : impl_(u.release(),estd::move(u.get_deleter()))
-    {
-
-    }
+    template <typename U, typename E, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
+    unique_ptr(unique_ptr<U, E> &&u) noexcept : impl_(u.release(), estd::move(u.get_deleter())) {}
 
     unique_ptr(unique_ptr &&p) noexcept
         : impl_(p.release(), estd::forward<deleter_type>(p.get_deleter())) {}
@@ -337,6 +334,20 @@ public:
         ++shared_count_;
     }
 
+    bool lock()
+    {
+        uint64_t count = shared_count_.load(estd::memory_order_relaxed);
+
+        do
+        {
+            if(count == 0)
+              return false;
+
+        }while(shared_count_.compare_exchange_weak(count,count + 1,estd::memory_order_acq_rel,estd::memory_order_relaxed));
+
+        return true;
+    }
+
     uint64_t shared_release() {
         return --shared_count_;
     }
@@ -384,6 +395,8 @@ class weak_ptr;
 template <typename T>
 class shared_ptr;
 
+class weak_count;
+
 class shared_count {
 public:
     shared_count() : impl_(nullptr) {}
@@ -396,6 +409,11 @@ public:
         if (impl_) {
             impl_->copy_shared_ref();
         }
+    }
+
+    shared_count(count_base *impl) : impl_(impl)
+    {
+        
     }
 
     shared_count(shared_count &&rhs) noexcept : impl_(rhs.impl_) {
@@ -430,6 +448,8 @@ public:
         release();
     }
 
+    friend class weak_count;
+
 private:
     count_base *impl_;
 };
@@ -441,12 +461,66 @@ inline void swap(shared_count &lhs, shared_count &rhs) noexcept {
 class weak_count {
 public:
     uint64_t use_count() const {
-        return impl_ ? impl_->get_weak_count() : 0;
+        return impl_ ? impl_->get_shared_count() : 0;
     }
+
+    weak_count() : impl_(nullptr) {}
+
+    weak_count(const weak_count &rhs) : impl_(rhs.impl_) {
+        if (impl_) {
+            impl_->copy_weak_ref();
+        }
+    }
+
+    weak_count(weak_count &&rhs) noexcept : impl_(rhs.impl_) {
+        rhs.impl_ = nullptr;
+    }
+
+    weak_count(const shared_count &rhs) noexcept : impl_(rhs.impl_) {
+        if (impl_) {
+            impl_->copy_weak_ref();
+        }
+    }
+
+    weak_count& operator=(weak_count rhs) {
+        rhs.swap(*this);
+        return *this;
+    }
+
+    void swap(weak_count &rhs) {
+        estd::swap(impl_, rhs.impl_);
+    }
+
+    void release() {
+        if (impl_ && impl_->weak_release() == 0) {
+            impl_->distory();
+            impl_ = nullptr;
+        }
+    }
+    
+    count_base* get() const 
+    {
+        return impl_;
+    }
+
+    bool lock()
+    {
+        return impl_ ? impl_->lock() : false; 
+    }
+
+    ~weak_count() {
+        release();
+    }
+
+    friend class shared_count;
 
 private:
     count_base *impl_;
 };
+
+inline void swap(weak_count &lhs, weak_count &rhs) {
+    lhs.swap(rhs);
+}
 
 template <typename T>
 class shared_ptr {
@@ -459,8 +533,7 @@ public:
 
     shared_ptr(const shared_ptr &rhs) : ptr_(rhs.ptr_), refcount_(rhs.refcount_) {}
 
-    shared_ptr(shared_ptr &&rhs) noexcept : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) 
-    {
+    shared_ptr(shared_ptr &&rhs) noexcept : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) {
         rhs.ptr_ = nullptr;
     }
 
@@ -479,19 +552,20 @@ public:
 
     template <typename U, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
     shared_ptr(shared_ptr<U> &&rhs) noexcept
-        : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) 
-    {
+        : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) {
         rhs.ptr_ = nullptr;
     }
 
     shared_ptr &operator=(shared_ptr rhs) noexcept {
-        swap(rhs);
+        rhs.swap(*this);
         return *this;
     }
 
     template <typename U, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
     shared_ptr &operator=(shared_ptr<U> rhs) noexcept {
-        swap(rhs);
+        reset();
+        ptr_ = rhs.ptr_;
+        refcount_ = rhs.refcount_;
         return *this;
     }
 
@@ -508,9 +582,16 @@ public:
     uint64_t use_count() const {
         return refcount_.use_count();
     }
+
     template <typename U, typename Deleter = default_deleter<T>>
     void reset(U *ptr = nullptr, Deleter &&deleter = Deleter()) {
         shared_count(ptr, estd::forward<Deleter>(deleter)).swap(refcount_);
+        ptr_ = ptr;
+    }
+
+    void reset() {
+        ptr_ = nullptr;
+        shared_count().swap(refcount_);
     }
 
     bool unique() const noexcept {
@@ -533,6 +614,16 @@ public:
         return get() == pointer_type() ? false : true;
     }
 
+    template <typename U>
+    friend class shared_ptr;
+
+    template <typename U>
+    friend class weak_ptr;
+private:
+    shared_ptr(const weak_ptr<T> &rhs) : ptr_(rhs.ptr_),refcount_(rhs.refcount_.get())
+    {
+
+    }
 private:
     pointer_type ptr_;
     shared_count refcount_;
@@ -545,6 +636,49 @@ public:
     using reference_type = T &;
     using pointer_type = T *;
 
+    weak_ptr() : ptr_(nullptr), refcount_() {}
+
+    weak_ptr(const weak_ptr &rhs) : ptr_(rhs.ptr_), refcount_(rhs.refcount_) {}
+
+    weak_ptr(weak_ptr &&rhs) : ptr_(rhs.ptr_), refcount_(estd::move(rhs.refcount_)) {
+        rhs.ptr_ = nullptr;
+    }
+
+    weak_ptr(const shared_ptr<T> &rhs) : ptr_(rhs.ptr_),refcount_(rhs.refcount_)
+    {
+
+    }
+
+    bool expired() const
+    {
+        return use_count() == 0;
+    }
+
+    uint64_t use_count() const
+    {
+        return refcount_.use_count();
+    }
+
+    shared_ptr<T> lock()
+    {
+        return refcount_.lock() ? shared_ptr<T>(*this) : nullptr;
+    }
+
+    weak_ptr &operator=(weak_ptr rhs) {
+        rhs.swap(*this);
+        return *this;
+    }
+
+    void swap(weak_ptr &rhs) {
+        estd::swap(ptr_, rhs.ptr_);
+        estd::swap(refcount_, rhs.refcount_);
+    }
+
+    template<typename U>
+    friend class shared_ptr;
+
+    template<typename U>
+    friend class weak_ptr;
 private:
     pointer_type ptr_;
     weak_count refcount_;
@@ -570,6 +704,35 @@ inline bool operator!=(nullptr_t, const shared_ptr<T> &lhs) {
     return static_cast<bool>(lhs);
 }
 
+template <typename T, typename U>
+inline bool operator==(estd::shared_ptr<T> &lhs, estd::shared_ptr<U> &rhs) {
+    return lhs.get() == rhs.get();
+}
+
+template <typename T, typename U>
+inline bool operator!=(estd::shared_ptr<T> &lhs, estd::shared_ptr<U> &rhs) {
+    return lhs.get() != rhs.get();
+}
+
+template <typename T>
+inline bool operator<(estd::shared_ptr<T> &lhs, estd::shared_ptr<T> &rhs) {
+    return estd::less<typename estd::shared_ptr<T>::pointer_type>()(lhs.get(), rhs.get());
+}
+
+template <typename T>
+inline bool operator<=(estd::shared_ptr<T> &lhs, estd::shared_ptr<T> &rhs) {
+    return estd::less_equal<typename estd::shared_ptr<T>::pointer_type>()(lhs.get(), rhs.get());
+}
+
+template <typename T>
+inline bool operator>(estd::shared_ptr<T> &lhs, estd::shared_ptr<T> &rhs) {
+    return estd::greater<typename estd::shared_ptr<T>::pointer_type>()(lhs.get(), rhs.get());
+}
+
+template <typename T>
+inline bool operator>=(estd::shared_ptr<T> &lhs, estd::shared_ptr<T> &rhs) {
+    return estd::greater_equal<typename estd::shared_ptr<T>::pointer_type>()(lhs.get(), rhs.get());
+}
 
 template <typename T, typename... Args>
 estd::shared_ptr<T> make_shared(Args &&... args) {
