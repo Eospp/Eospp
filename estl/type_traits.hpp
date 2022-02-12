@@ -596,6 +596,13 @@ struct is_abstract : bool_constant<__is_abstract(T)> {};
 template <typename T>
 constexpr inline bool is_abstract_v = is_abstract<T>::value;
 
+template<typename T,typename U>
+struct is_base_of : bool_constant<__is_base_of(T,U)> {};
+
+template<typename T,typename U>
+constexpr inline bool is_base_of_v = is_base_of<T,U>::value;
+
+
 template <typename T>
 struct is_final : bool_constant<__is_final(T)> {};
 
