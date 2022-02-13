@@ -522,6 +522,12 @@ inline void swap(weak_count &lhs, weak_count &rhs) {
     lhs.swap(rhs);
 }
 
+template<typename T,typename = void>
+struct enable_shared_from_this_helper : estd::false_type{};
+
+template<typename T>
+struct enable_shared_from_this_helper<T,estd::void_t<decltype(T::M_weak_this_)>> : estd::true_type{};
+
 template <typename T>
 class shared_ptr {
 public:
@@ -539,13 +545,19 @@ public:
 
     template <typename Deleter = default_deleter<T>>
     shared_ptr(T *ptr, Deleter &&deleter = Deleter())
-        : ptr_(ptr), refcount_(ptr, estd::forward<Deleter>(deleter)) {}
+        : ptr_(ptr), refcount_(ptr, estd::forward<Deleter>(deleter)) 
+    {
+        construct_shared_from_this<T>();
+    }
 
     template <typename U,
               typename Deleter = default_deleter<U>,
               typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
     shared_ptr(U *ptr, Deleter &&deleter = Deleter())
-        : ptr_(ptr), refcount_(ptr, estd::forward<Deleter>(deleter)) {}
+        : ptr_(ptr), refcount_(ptr, estd::forward<Deleter>(deleter))
+    {
+        construct_shared_from_this<U>();
+    }
 
     template <typename U, typename = estd::enable_if_t<estd::is_base_of_v<T, U>>>
     shared_ptr(const shared_ptr<U> &rhs) : ptr_(rhs.ptr_), refcount_(rhs.refcount_) {}
@@ -624,6 +636,18 @@ private:
     {
 
     }
+
+    template<typename U>
+    void construct_shared_from_this()
+    {
+         if constexpr(enable_shared_from_this_helper<U>::value)
+         {
+             if(get() != nullptr)
+             {
+                (*this)->M_weak_this_ = *this;
+             }
+         }
+    }
 private:
     pointer_type ptr_;
     shared_count refcount_;
@@ -648,6 +672,9 @@ public:
     {
 
     }
+
+    template<typename U,typename = estd::enable_if_t<estd::is_base_of_v<T,U>>>
+    weak_ptr(const shared_ptr<U> &rhs) : ptr_(rhs.ptr_),refcount_(rhs.refcount_){}
 
     bool expired() const
     {
@@ -738,5 +765,32 @@ template <typename T, typename... Args>
 estd::shared_ptr<T> make_shared(Args &&... args) {
     return estd::shared_ptr<T>(new T(estd::forward<Args>(args)...));
 }
+
+template<typename T>
+class enable_shared_from_this
+{
+public:
+      enable_shared_from_this() = default;
+      ~enable_shared_from_this() = default;
+
+      estd::shared_ptr<T> shared_from_this()
+      {
+          return M_weak_this_.lock();
+      }
+
+      estd::weak_ptr<T> shared_from_this_weak()
+      {
+          return M_weak_this_;
+      }
+
+     template<typename U>
+     friend class shared_ptr;
+
+     template<typename U,typename P>
+     friend struct enable_shared_from_this_helper;
+
+private:
+    estd::weak_ptr<T> M_weak_this_;
+};
 
 }   // namespace estd
