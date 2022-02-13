@@ -596,11 +596,11 @@ struct is_abstract : bool_constant<__is_abstract(T)> {};
 template <typename T>
 constexpr inline bool is_abstract_v = is_abstract<T>::value;
 
-template<typename T,typename U>
-struct is_base_of : bool_constant<__is_base_of(T,U)> {};
+template <typename T, typename U>
+struct is_base_of : bool_constant<__is_base_of(T, U)> {};
 
-template<typename T,typename U>
-constexpr inline bool is_base_of_v = is_base_of<T,U>::value;
+template <typename T, typename U>
+constexpr inline bool is_base_of_v = is_base_of<T, U>::value;
 
 
 template <typename T>
@@ -633,5 +633,24 @@ struct nth_type<N, N, T, Args...> {
 
 template <size_t N, typename... Args>
 using nth_type_t = typename nth_type<0, N, Args...>::type;
+
+#define HasMember(member)                                                                          \
+    template <typename T, typename = void>                                                         \
+    struct has_member_##member : estd::false_type {};                                               \
+                                                                                                   \
+    template <typename T>                                                                          \
+    struct has_member_##member<T, estd::void_t<decltype(T::member)>> : estd::true_type {};          \
+                                                                                                   \
+   
+
+#define HasType(type)                                                                              \
+    template <typename T, typename = void>                                                         \
+    struct has_member_##type : estd::false_type {};                                                 \
+                                                                                                   \
+    template <typename T>                                                                          \
+    struct has_member_##type<T, estd::void_t<typename T::type>> : estd::true_type {};               \
+                                                                                                   \
+
+
 
 }   // namespace estd
