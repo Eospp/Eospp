@@ -3,7 +3,7 @@
 #include <thread>
 #include <list>
 
-struct A
+struct A : estd::enable_shared_from_this<A>
 {
     A() = default;
     A(int n) : m(n){}
@@ -12,7 +12,7 @@ struct A
 
 struct B : A{};
 
-TEST(UNIQUE_PTR_TEST, CONSTRUTOR_TEST) {
+TEST(UNIQUE_PTR_TEST, CONSTRUCTOR_TEST) {
     // construtor
     estd::unique_ptr<int> p(new int(5));
     estd::unique_ptr<int> p1 = estd::make_unique<int>(5);
@@ -24,7 +24,7 @@ TEST(UNIQUE_PTR_TEST, CONSTRUTOR_TEST) {
     estd::unique_ptr<A> p2(new B());
     
 }
-TEST(UNIQUE_PTR_TEST, MOVE_CONSTRUTOR_TEST) {
+TEST(UNIQUE_PTR_TEST, MOVE_CONSTRUCTOR_TEST) {
     estd::unique_ptr<int> p = estd::make_unique<int>(5);
     estd::unique_ptr<int> p1(estd::move(p));
     estd::unique_ptr<A> p2 = estd::make_unique<B>();
@@ -85,7 +85,7 @@ TEST(UNIQUE_PTR_TEST, ARRAY_TEST) {
 }
 
 
-TEST(SHARED_PTR_TEST, CONSTRUTOR_TEST) {
+TEST(SHARED_PTR_TEST, CONSTRUCTOR_TEST) {
     estd::shared_ptr<int> p = estd::make_shared<int>(5);
     ASSERT_TRUE(p != nullptr);
     EXPECT_TRUE(*p == 5);
@@ -109,7 +109,7 @@ TEST(SHARED_PTR_TEST, CONSTRUTOR_TEST) {
     
 }
 
-TEST(SHARED_PTR_TEST,COPY_CONSTRUTOR_TEST)
+TEST(SHARED_PTR_TEST,COPY_CONSTRUCTOR_TEST)
 {
     estd::shared_ptr<int> p = estd::make_shared<int>(88);
     ASSERT_TRUE(p != nullptr);
@@ -124,7 +124,7 @@ TEST(SHARED_PTR_TEST,COPY_CONSTRUTOR_TEST)
 }
 
 
-TEST(SHARED_PTR_TEST,MOVE_CONSTRUTOR_TEST)
+TEST(SHARED_PTR_TEST,MOVE_CONSTRUCTOR_TEST)
 {
     estd::shared_ptr<int> p = estd::make_shared<int>(88);
     ASSERT_TRUE(p != nullptr);
@@ -237,12 +237,12 @@ TEST(SHARED_PTR_TEST,INTERFACE_TEST)
     EXPECT_EQ((*p4).m,77);
 }
 
-TEST(WEAK_PTR_TEST,CONSTRUTOR_TEST)
+TEST(WEAK_PTR_TEST,CONSTRUCTOR_TEST)
 {
     estd::weak_ptr<int> p;
     EXPECT_TRUE(p.expired());
     EXPECT_EQ(p.use_count(),0);
-    
+
     auto p1 = p.lock();
     EXPECT_TRUE(p1 == nullptr);
 
@@ -255,4 +255,54 @@ TEST(WEAK_PTR_TEST,CONSTRUTOR_TEST)
     ASSERT_TRUE(p2 != nullptr);
     EXPECT_TRUE(*p2 == 5);
     EXPECT_TRUE(p2.use_count() == 2);
+
+
+    estd::weak_ptr<int> p3 = p;
+    EXPECT_TRUE(p3.use_count() == 2);
+
+    estd::weak_ptr<int> p4(estd::move(p));
+    EXPECT_TRUE(p.expired());
+    EXPECT_TRUE(p.use_count() == 0);
+    EXPECT_TRUE(p4.use_count() == 2);
+
+    estd::weak_ptr<int> p5 = estd::move(p4);
+
+    EXPECT_TRUE(p4.expired());
+    EXPECT_TRUE(p4.use_count() == 0);
+    EXPECT_TRUE(p5.use_count() == 2);
+
+    estd::weak_ptr<int> p6 = estd::shared_ptr<int>();
+    EXPECT_TRUE(p6.expired());
+
+    estd::shared_ptr<B> p7(new B());
+    estd::weak_ptr<A> p8(p7);
+    EXPECT_FALSE(p8.expired());
+
+    auto p9 = p8.lock();
+    ASSERT_TRUE(p9 != nullptr);
+    EXPECT_TRUE(p9.use_count() == 2);
+}
+
+TEST(SHARED_FRON_THIS_TEST,BASE_TEST)
+{
+    estd::shared_ptr<A> p = estd::make_shared<A>();
+    auto p1 = p->shared_from_this();
+    ASSERT_TRUE(p1 != nullptr);
+    EXPECT_TRUE(p1.use_count() == 2);
+
+    estd::shared_ptr<A> p2(new B());
+
+    auto p3 = p2->shared_from_this();
+
+    ASSERT_TRUE(p3 != nullptr);
+    EXPECT_TRUE(p3.use_count() == 2);
+    EXPECT_TRUE(p3->m == 77);
+
+    estd::shared_ptr<A> p4(p3);
+    auto p5 = p4->shared_from_this();
+    ASSERT_TRUE(p5 != nullptr);
+
+    estd::shared_ptr<A> p6(estd::move(p5));
+    p5 = p6->shared_from_this();
+    ASSERT_TRUE(p5 != nullptr);
 }
