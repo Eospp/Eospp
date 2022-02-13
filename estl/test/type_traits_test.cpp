@@ -155,3 +155,23 @@ TEST(TYPE_TRAITS, REMOVE_TYPE_TEST) {
     EXPECT_EQ(typeid(int), typeid(estd::decay_t<int const volatile>));
     EXPECT_EQ(typeid(int (*)(int, int)), typeid(estd::decay_t<decltype(func)>));
 }
+
+HasMember(number);
+HasType(class_type);
+
+TEST(TYPE_TRAITS,HAS_MEMBER_TEST)
+{
+    class A
+    {
+    public:
+         using class_type = A;
+         
+         int number;
+    };
+    EXPECT_TRUE(has_member_number<A>::value);
+    EXPECT_TRUE(has_member_class_type<A>::value);
+    
+    EXPECT_FALSE((has_member_number<estd::pair<int,int>>::value));
+    EXPECT_FALSE((has_member_class_type<estd::pair<int,int>>::value));
+
+}
