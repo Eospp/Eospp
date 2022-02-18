@@ -88,7 +88,7 @@ public:
     template <typename Iter>
     normal_iterator(
         const normal_iterator<Iter,
-                              estd::enable_if_t<estd::is_same_v<Iter, typename Container::pointer>>>
+                              estd::enable_if_t<estd::is_same_v<Iter, typename Container::pointer>,Container>>
             &i) noexcept
         : M_current_(i.base()) {}
 
