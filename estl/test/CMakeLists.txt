@@ -26,10 +26,13 @@ set(TEST_LISTS
     tuple_test
     functional_test
     memory_test
+    vector_test
+    defer_test
     )
 
 set(MEMORY_TESTS
-    memory_test)
+    memory_test
+    vector_test)
 
     foreach(Test ${TEST_LISTS})
     message(STATUS "build ${Test}")
