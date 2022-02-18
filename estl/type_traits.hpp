@@ -631,26 +631,41 @@ struct nth_type<N, N, T, Args...> {
     using type = T;
 };
 
+template <typename T, typename... Args>
+struct is_trivially_constructible : public bool_constant<__is_trivially_constructible(T, Args...)> {};
+
+template <typename T>
+struct is_trivially_default_constructible : is_trivially_constructible<T>::type {};
+
+template <typename T>
+struct is_trivially_destructible : public bool_constant<__has_trivial_destructor(T)>{};
+
+template<typename T>
+constexpr inline bool is_trivially_destructible_v = is_trivially_destructible<T>::value;
+
+template <typename T>
+struct has_virtual_destructor : public integral_constant<bool, __has_virtual_destructor(T)> {};
+
+template<typename T>
+constexpr inline bool has_virtual_destructor_v = has_virtual_destructor<T>::value;
+
 template <size_t N, typename... Args>
 using nth_type_t = typename nth_type<0, N, Args...>::type;
 
 #define HasMember(member)                                                                          \
     template <typename T, typename = void>                                                         \
-    struct has_member_##member : estd::false_type {};                                               \
+    struct has_member_##member : estd::false_type {};                                              \
                                                                                                    \
     template <typename T>                                                                          \
-    struct has_member_##member<T, estd::void_t<decltype(T::member)>> : estd::true_type {};          \
-                                                                                                   \
-   
+    struct has_member_##member<T, estd::void_t<decltype(T::member)>> : estd::true_type {};
+
 
 #define HasType(type)                                                                              \
     template <typename T, typename = void>                                                         \
-    struct has_member_##type : estd::false_type {};                                                 \
+    struct has_member_##type : estd::false_type {};                                                \
                                                                                                    \
     template <typename T>                                                                          \
-    struct has_member_##type<T, estd::void_t<typename T::type>> : estd::true_type {};               \
-                                                                                                   \
-
+    struct has_member_##type<T, estd::void_t<typename T::type>> : estd::true_type {};
 
 
 }   // namespace estd
