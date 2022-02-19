@@ -2,6 +2,7 @@
 
 #include <allocator.hpp>
 #include <iterator.hpp>
+#include <initializer_list>
 namespace estd {
 
 template <typename T, typename alloc = allocator<T>>
@@ -20,7 +21,13 @@ public:
     using diference_type = ptrdiff_t;
 
     vector() : M_start_(nullptr), M_finish_(nullptr), M_end_of_storage_(nullptr) {}
+    vector(std::initializer_list<T> list)
+    {
+        allocate(list.size());
 
+        for(auto &it : list)
+          push_back(it);
+    }
     vector(size_type size, const T &v) {
         allocate(size);
 
