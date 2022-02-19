@@ -72,6 +72,16 @@ TEST(VECTOR_TEST,CONSTRUTOR_TEST)
     {
         EXPECT_EQ(v6[i],i);
     }
+
+    estd::vector<int> v7(10);
+
+    for(int i = 0;i < 10; i++)
+       EXPECT_EQ(v7[i],0);
+    
+    estd::vector<int> v8(10,7);
+
+    for(int i = 0;i < 10;i++)
+      EXPECT_EQ(v8[i],7);
 }
 
 TEST(VECTOR_TEST,INTERFACE_TEST)
