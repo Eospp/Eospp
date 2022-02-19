@@ -6,7 +6,7 @@ TEST(DEFER_TEST,BAST_TEST)
 {
     bool flag = false;
     {
-        defer_scope [&flag]()
+        defer_scope [&flag]
         {
             flag = true;
         };
@@ -15,11 +15,22 @@ TEST(DEFER_TEST,BAST_TEST)
 
     flag = false;
     {
-        defer_scope [&flag]()
+        defer_scope [&flag]
         {
             flag = true;
         };
     }
     
     EXPECT_TRUE(flag);
+
+    flag = false;
+    {
+        defer_lamda
+        {
+            flag = true;
+        };
+    }
+
+    EXPECT_TRUE(flag);
+
 }
