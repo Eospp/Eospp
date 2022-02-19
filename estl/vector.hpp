@@ -21,10 +21,23 @@ public:
 
     vector() : M_start_(nullptr), M_finish_(nullptr), M_end_of_storage_(nullptr) {}
 
-    explicit vector(size_type size, const T &v = T()) {
+    vector(size_type size, const T &v) {
         allocate(size);
 
-        for (int i = 0; i < size; i++) push_back(v);
+        for(size_t i = 0;i < size; i++)
+           construct(M_start_ + i,v);
+
+        M_finish_ = M_start_ + size;
+    }
+
+    explicit vector(size_type size)
+    {
+        allocate(size);
+
+        for(size_t i = 0;i < size; i++)
+           construct(M_start_ + i);
+        
+        M_finish_ = M_start_ + size;
     }
 
     vector(const vector &rhs) : vector() {
