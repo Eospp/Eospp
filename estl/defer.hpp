@@ -56,3 +56,4 @@ struct defer_helper
 }   // namespace estd
 
 #define defer_scope auto defer_##__COUNTER__  = estd::defer_helper() - 
+#define defer_lamda defer_scope [&]
