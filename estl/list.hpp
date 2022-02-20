@@ -251,7 +251,7 @@ public:
         }
     }
     list(list &&rhs) noexcept : list() {
-         rhs.swap(*this);
+        rhs.swap(*this);
     }
 
     list &operator=(list rhs) {
@@ -276,14 +276,14 @@ public:
 
     iterator insert(iterator pos, const_reference value) {
         node_type *link_node = create_node(value);
-        link_node->link_next(pos.current_);
+        pos.current_->link_prv(link_node);
         list_size_++;
         return iterator(link_node);
     }
 
     iterator insert(iterator pos, rvalue_reference value) {
         node_type *link_node = create_node(estd::move(value));
-        link_node->link_next(pos.current_);
+        pos.current_->link_prv(link_node);
         list_size_++;
         return iterator(link_node);
     }
@@ -297,25 +297,35 @@ public:
     }
 
     iterator erase(iterator first, iterator last) {
+        //erase [first,last)
         node_type *prv = first.current_->get_prv();
-        node_type *next = last.current_->get_next();
-        first.current_->unlink_prv();
-        last.current_->unlink_next();
-        prv->link_next(next);
-        destory_node(first.current_, last.current_);
-        return iterator(next);
+        prv->unlink_next();
+        size_type n = 0;
+        for(node_type* cur = first.current_; cur != last.current_;n++)
+        {
+            node_type *tmp = cur->get_next();
+            destory_node(cur);
+            cur = tmp;
+        }
+        prv->link_next(last.current_);
+        list_size_ -= n;
+        return last;
     }
 
     void pop_back() {
         if (!empty()) {
-            node_.get_prv()->unlink();
+            node_type* prv = node_.get_prv();
+            prv->unlink();
+            destory_node(prv);
             list_size_--;
         }
     }
 
     void pop_front() {
         if (!empty()) {
-            node_.get_next()->unlink();
+            node_type* next = node_.get_next();
+            next->unlink();
+            destory_node(next);
             list_size_--;
         }
     }
@@ -402,14 +412,21 @@ public:
     }
 
     void clear() {
-        if (empty()) return;
+        if (empty()) {
+            return;
+        }
+        node_type *first = node_.get_next();
+        node_type *last  = node_.get_prv();
+        node_.unlink_prv();
+        node_.unlink_next();
+        node_.link_next(&node_);
+        node_.link_prv(&node_);
 
-        for (node_type *cur = node_.get_next(); cur != node_.cast_to_driver();) {
+        for (node_type *cur = first; cur != nullptr;) {
             auto tmp = cur->get_next();
             destory_node(cur);
             cur = tmp;
         }
-
         list_size_ = 0;
     }
 
@@ -425,14 +442,6 @@ private:
 
     void destory_node(node_type *link_node) {
         delete link_node;
-    }
-
-    void destory_node(node_type *first, node_type *last) {
-        for (node_type *cur = first; cur != nullptr;) {
-            node_type *tmp = cur->get_next();
-            destory_node(tmp);
-            cur = tmp;
-        }
     }
 
 private:
