@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <atomic.hpp>
+#include <list>
+#include <thread>
 
 TEST(ATMOIC_TEST, BASE_TEST) {
     estd::atomic<int> v(1);
@@ -61,4 +63,26 @@ TEST(ATMOIC_TEST, BASE_TEST) {
     value = v.load();
     v.compare_exchange_strong(value, 20, estd::memory_order_acq_rel, estd::memory_order_relaxed);
     EXPECT_EQ(v.load(), 20);
+}
+TEST(ATOMIC_TEST,MULTI_THREAD_TEST)
+{
+
+    estd::atomic<int> v(0);
+    std::list<std::thread> threads;
+    int times = 1000000;
+    int thread_count = 4;
+    for(int i = 0;i < thread_count;i++)
+    {
+        threads.emplace_back([&v,times]()
+        {
+            for(int i = 0;i < times;i++)
+               v++;
+        });
+    }
+
+    for(auto& thread : threads)
+        thread.join();
+    
+    EXPECT_EQ(v.load(),thread_count * times);
+
 }
