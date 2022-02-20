@@ -195,7 +195,7 @@ public:
         return *this;
     }
     const_list_iterator operator++(int) {
-        list_iterator it = *this;
+        const_list_iterator it = *this;
         current_ = current_->get_next();
         return it;
     }
@@ -206,7 +206,7 @@ public:
     }
 
     const_list_iterator operator--(int) {
-        list_iterator it = *this;
+        const_list_iterator it = *this;
         current_ = current_->get_prv();
         return it;
     }
@@ -259,6 +259,28 @@ public:
         return *this;
     }
 
+    bool operator==(const list &rhs) {
+        if (size() != rhs.size()) {
+            return false;
+        }
+        auto lhs_begin = begin();
+        auto rhs_begin = rhs.begin();
+
+        for (int i = 0; i < size(); i++) {
+            if (*lhs_begin != *rhs_begin) {
+                return false;
+            }
+            lhs_begin++;
+            rhs_begin++;
+        }
+        return true;
+    }
+
+    bool operator!=(const list &rhs)
+    {
+        return !(*this == rhs);
+    }
+
     void push_front(const_reference value) {
         emplace_front(value);
     }
@@ -297,12 +319,11 @@ public:
     }
 
     iterator erase(iterator first, iterator last) {
-        //erase [first,last)
+        // erase [first,last)
         node_type *prv = first.current_->get_prv();
         prv->unlink_next();
         size_type n = 0;
-        for(node_type* cur = first.current_; cur != last.current_;n++)
-        {
+        for (node_type *cur = first.current_; cur != last.current_; n++) {
             node_type *tmp = cur->get_next();
             destory_node(cur);
             cur = tmp;
@@ -314,7 +335,7 @@ public:
 
     void pop_back() {
         if (!empty()) {
-            node_type* prv = node_.get_prv();
+            node_type *prv = node_.get_prv();
             prv->unlink();
             destory_node(prv);
             list_size_--;
@@ -323,7 +344,7 @@ public:
 
     void pop_front() {
         if (!empty()) {
-            node_type* next = node_.get_next();
+            node_type *next = node_.get_next();
             next->unlink();
             destory_node(next);
             list_size_--;
@@ -416,7 +437,7 @@ public:
             return;
         }
         node_type *first = node_.get_next();
-        node_type *last  = node_.get_prv();
+        node_type *last = node_.get_prv();
         node_.unlink_prv();
         node_.unlink_next();
         node_.link_next(&node_);
