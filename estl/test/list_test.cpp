@@ -189,4 +189,12 @@ TEST(LIST_TEST,INTERFACE_TEST)
 
     L.erase(L.begin(),L.end());
     EXPECT_TRUE(L.empty());
+
+    //operator==
+    estd::list<int> L1{1,2,3,4};
+    estd::list<int> L2{1,2,3,4};
+    estd::list<int> L3{1,3};
+    EXPECT_TRUE(L1 == L2);
+    EXPECT_TRUE(L1 != L3);
+    EXPECT_TRUE(L2 != L3);
 }
