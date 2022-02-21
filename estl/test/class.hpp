@@ -6,16 +6,23 @@ namespace estd::test {
 class A {
 public:
     A() : value(nullptr) {}
-    
+
     A(int v) : value(new int(v)) {}
 
     A(const A& rhs) : value(rhs.value ? new int(*rhs.value) : nullptr) {}
 
-    A(A&& rhs) : A() { 
+    A(A&& rhs) : A() {
         rhs.swap(*this);
     }
     ~A() {
         if (value) delete value;
+    }
+    int& operator*() {
+        return *value;
+    }
+
+    int& operator*() const{
+        return *value;
     }
 
     void swap(A& rhs) {
@@ -30,4 +37,4 @@ public:
 public:
     int* value;
 };
-}   // namespace Test
+}   // namespace estd::test
