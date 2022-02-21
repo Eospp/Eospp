@@ -303,11 +303,11 @@ public:
         return M_end_of_storage_ - M_start_;
     }
 
-    reference &operator[](size_t index) {
+    reference operator[](size_t index) {
         return *(M_start_ + index);
     }
 
-    const_reference &operator[](size_t index) const {
+    const_reference operator[](size_t index) const {
         return *(M_start_ + index);
     }
 
