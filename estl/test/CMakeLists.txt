@@ -29,12 +29,14 @@ set(TEST_LISTS
     vector_test
     defer_test
     list_test
+    deque_test
     )
 
 set(MEMORY_TESTS
     memory_test
     vector_test
-    list_test)
+    list_test
+    deque_test)
 
     foreach(Test ${TEST_LISTS})
     message(STATUS "build ${Test}")
