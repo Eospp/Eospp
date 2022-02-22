@@ -190,7 +190,8 @@ TEST(VECTOR_TEST,OBJECT_TEST)
 
     estd::vector<estd::shared_ptr<int>> v2;
 
-    v2.emplace_back(new int(5),deleter);
+    auto &&it = v2.emplace_back(new int(5),deleter);
+    EXPECT_EQ(*it,5);
 
     v2.pop_back();
 
@@ -230,5 +231,9 @@ TEST(VECOTR_TEST,ITERATOR_TEST)
 
     v.erase(v.begin(),v.end());
     EXPECT_TRUE(v.empty());
+
+    v.emplace(v.begin(),77);
+    EXPECT_EQ(v.front(),77);
+    
      
 }
