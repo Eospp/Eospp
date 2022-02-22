@@ -30,13 +30,17 @@ set(TEST_LISTS
     defer_test
     list_test
     deque_test
+    queue_test
+    stack_test
     )
 
 set(MEMORY_TESTS
     memory_test
     vector_test
     list_test
-    deque_test)
+    deque_test
+    queue_test
+    stack_test)
 
     foreach(Test ${TEST_LISTS})
     message(STATUS "build ${Test}")
