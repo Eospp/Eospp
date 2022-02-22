@@ -352,17 +352,19 @@ public:
     }
 
     template <typename... Args>
-    void emplace_back(Args &&...args) {
+    reference emplace_back(Args &&...args) {
         node_type *link_node = create_node(estd::forward<Args>(args)...);
         node_.link_prv(link_node);
         list_size_++;
+        return link_node->get_value();
     }
 
     template <typename... Args>
-    void emplace_front(Args &&...args) {
+    reference emplace_front(Args &&...args) {
         node_type *link_node = create_node(estd::forward<Args>(args)...);
         node_.link_next(link_node);
         list_size_++;
+        return link_node->get_value();
     }
 
     reference front() {
