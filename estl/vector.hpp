@@ -136,7 +136,7 @@ public:
     }
 
     template <typename... Args>
-    void emplace(iterator pos, Args &&...args) {
+    reference emplace(iterator pos, Args &&...args) {
         size_type index = pos - begin();
 
         ensure_capacity(size() + 1);
@@ -151,6 +151,8 @@ public:
         construct(M_start_ + index, estd::forward<Args>(args)...);
 
         M_finish_++;
+
+        return *(M_start_ + index);
     }
 
     iterator erase(iterator pos) {
@@ -192,9 +194,10 @@ public:
     }
 
     template <typename... Args>
-    void emplace_back(Args &&...args) {
+    reference emplace_back(Args &&...args) {
         ensure_capacity(size() + 1);
         construct(M_finish_++, estd::forward<Args>(args)...);
+        return *(M_finish_ - 1);
     }
 
 
