@@ -126,15 +126,17 @@ TEST(LIST_TEST,INTERFACE_TEST)
     //emplace_front
     for(int i = 0;i < 100000;i++)
     {
-        L.emplace_front(i);
+        auto &&it = L.emplace_front(i);
         EXPECT_EQ(L.front(),i);
+        EXPECT_EQ(it,i);
     }
     L.clear();
     //emplace_back
     for(int i = 0;i < 100000;i++)
     {
-        L.emplace_back(i);
+        auto &&it = L.emplace_back(i);
         EXPECT_EQ(L.back(),i);
+        EXPECT_EQ(it,i);
     }
     //pop_bcak
     for(int i = 99999;i >= 1;i--)
