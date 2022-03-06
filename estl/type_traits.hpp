@@ -652,6 +652,18 @@ constexpr inline bool has_virtual_destructor_v = has_virtual_destructor<T>::valu
 template <size_t N, typename... Args>
 using nth_type_t = typename nth_type<0, N, Args...>::type;
 
+template<typename T1,typename T2>
+class pair;
+
+template<typename T>
+struct is_pair : false_type{};
+
+template<typename T1,typename T2>
+struct is_pair<pair<T1,T2>> : true_type{};
+
+template<typename T>
+constexpr inline bool is_pair_v = is_pair<T>::value;
+
 #define HasMember(member)                                                                          \
     template <typename T, typename = void>                                                         \
     struct has_member_##member : estd::false_type {};                                              \
