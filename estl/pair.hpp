@@ -73,9 +73,9 @@ inline bool operator>=(const pair<T1, T2> &lhs, const pair<T1, T2> &rhs) {
 }
 
 template <typename T1, typename T2>
-inline pair<estd::decay_t<T1>, estd::decay_t<T2>> make_pair(T1 &&lhs, T2 &&rhs) {
-    return pair<estd::decay_t<T1>, estd::decay_t<T2>>(estd::forward<T1>(lhs),
-                                                      estd::forward<T2>(rhs));
+inline pair<T1, T2> make_pair(T1 &&lhs, T2 &&rhs) {
+    return pair<T1, T2>(estd::forward<T1>(lhs),
+                        estd::forward<T2>(rhs));
 }
 
 template <typename T1, typename T2>
