@@ -450,7 +450,7 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
 
         if (root == z)
             root = y;
-        else if (rb_tree_is_lchild(z))
+        else if (rb_tree_node_is_lchild(z))
             z->parent->left = y;
         else
             z->parent->right = y;
@@ -465,7 +465,7 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
 
         if (root == z)
             root = x;
-        else if (rb_tree_is_lchild(z))
+        else if (rb_tree_node_is_lchild(z))
             z->parent->left = x;
         else
             z->parent->right = x;
@@ -749,7 +749,7 @@ public:
     }
 
     iterator erase(iterator hint) {
-        node_ptr node = hint.node;
+        auto node = hint.node;
         iterator next = ++iterator(node);
         rb_tree_erase_rebalance(hint.node, root(), min_node(), max_node());
         destory_node(node);
