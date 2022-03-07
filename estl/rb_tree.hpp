@@ -1,4 +1,5 @@
 #pragma once
+#include <initializer_list>
 #include <pair.hpp>
 #include <type_traits.hpp>
 #include <utility.hpp>
@@ -14,8 +15,8 @@ struct rb_tree_node_base {
     Driver *get_driver_ptr() {
         return static_cast<Driver *>(this);
     }
-    
-    const Driver *get_driver_ptr() const{
+
+    const Driver *get_driver_ptr() const {
         return static_cast<const Driver *>(this);
     }
 
@@ -77,7 +78,7 @@ public:
                  rb_tree_node_base_ptr left,
                  rb_tree_node_base_ptr right,
                  rb_tree_node_base_ptr parent,
-                 Args &&...args) 
+                 Args &&...args)
         : rb_tree_node_base_type(color, left, right, parent), value(estd::forward<Args>(args)...) {}
 
     value_type value;
@@ -184,7 +185,6 @@ public:
 
     void decrement() {
         if (node->parent->parent == node && node->is_red()) {
-            // node == header_
             node = node->right;
         } else if (node->left) {
             node = node->left;
@@ -244,13 +244,12 @@ public:
         return *this;
     }
 
-    bool operator==(const rb_tree_iterator &rhs) const{
+    bool operator==(const rb_tree_iterator &rhs) const {
         return node == rhs.node;
     }
-    bool operator!=(const rb_tree_iterator &rhs) const{
-        return node != rhs.node; 
+    bool operator!=(const rb_tree_iterator &rhs) const {
+        return node != rhs.node;
     }
-
 };
 
 
@@ -293,6 +292,14 @@ public:
         rb_tree_iterator current(*this);
         this->decrement();
         return *this;
+    }
+
+    bool operator==(const rb_tree_const_iterator &rhs) {
+        return node == rhs.node;
+    }
+
+    bool operator!=(const rb_tree_const_iterator &rhs) {
+        return node != rhs.node;
     }
 };
 
@@ -456,14 +463,12 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
         xp = y->parent;
         if (x) x->parent = y->parent;
 
-
         if (root == z)
             root = x;
         else if (rb_tree_is_lchild(z))
             z->parent->left = x;
         else
             z->parent->right = x;
-
 
         if (leftmost == z) leftmost = x == nullptr ? xp : rb_tree_min(x);
         if (rightmost == z) rightmost = x == nullptr ? xp : rb_tree_max(x);
@@ -532,6 +537,16 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
     return y;
 }
 
+template <typename T>
+size_t distance(rb_tree_iterator<T> first, rb_tree_iterator<T> last) {
+    size_t n = 0;
+    while (first != last) {
+        first++;
+        n++;
+    }
+    return n;
+}
+
 
 template <typename T, typename Compare = estd::less<T>>
 class rb_tree {
@@ -554,36 +569,56 @@ public:
     using const_iterator = rb_tree_const_iterator<T>;
     using insert_ret = pair<iterator, bool>;
     using size_type = size_t;
+
 public:
-    rb_tree() : header_(new node_base_type(rb_tree_color::red)),count_(0){
-          header_->left = header_;
-          header_->right = header_;
+    rb_tree() : header_(new node_base_type(rb_tree_color::red)), count_(0) {
+        header_->left = header_;
+        header_->right = header_;
     }
-    rb_tree(const rb_tree &rhs) : rb_tree(){
-        for(auto &it : rhs){
-            insert_multi(*it);
+
+    rb_tree(const Compare &c)
+        : header_(new node_base_type(rb_tree_color::red)), count_(0), compare_(c) {
+        header_->left = header_;
+        header_->right = header_;
+    }
+
+    rb_tree(Compare &&c)
+        : header_(new node_base_type(rb_tree_color::red)), count_(0), compare_(estd::move(c)) {
+        header_->left = header_;
+        header_->right = header_;
+    }
+
+
+    rb_tree(const rb_tree &rhs) : rb_tree(rhs.compare_) {
+        for (auto &it : rhs) {
+            insert_multi(it);
         }
     }
-    rb_tree(rb_tree &&rhs) noexcept : rb_tree(){
-         rhs.swap(*this);
+    rb_tree(rb_tree &&rhs) noexcept : rb_tree() {
+        rhs.swap(*this);
+    }
+    rb_tree(const std::initializer_list<T> &list) : rb_tree() {
+        for (auto &it : list) {
+            insert_multi(it);
+        }
     }
 
-    rb_tree& operator=(rb_tree rhs){
-         rhs.swap(*this);
-         return *this;
+    rb_tree &operator=(rb_tree rhs) {
+        rhs.swap(*this);
+        return *this;
     }
 
-    ~rb_tree(){
+    ~rb_tree() {
         clear();
         delete header_;
     }
 
-    void swap(rb_tree &rhs){
-        estd::swap(rhs.header_,header_);
-        estd::swap(rhs.count_,count_);
-        estd::swap(rhs.compare_,compare_);
-
+    void swap(rb_tree &rhs) {
+        estd::swap(rhs.header_, header_);
+        estd::swap(rhs.count_, count_);
+        estd::swap(rhs.compare_, compare_);
     }
+
 public:
     iterator begin() {
         return min_node();
@@ -642,7 +677,10 @@ public:
         iterator it(node);
         return it == end() || compare_(key, get_key(node)) ? end() : it;
     }
-    size_type count_multi(const key_type &key) {}
+    size_type count_multi(const key_type &key) {
+        auto &&[first, last] = equal_range_multi(key);
+        return distance(first, last);
+    }
     size_type count_unique(const key_type &key) {
         return find(key) != end() ? 1 : 0;
     }
@@ -667,11 +705,6 @@ public:
         return {pos.first, false};
     }
 
-    template <typename... Args>
-    iterator emplace_multi_hint(iterator hint, Args &&...args);
-
-    template <typename... Args>
-    iterator emplace_unique_hint(iterator hint, Args &&...args);
 
     iterator insert_multi(const_reference value) {
         return emplace_multi(value);
@@ -682,7 +715,11 @@ public:
     }
 
     template <typename It>
-    void insert_multi(It first, It last){}
+    void insert_multi(It first, It last) {
+        while (first != last) {
+            insert_multi(*first);
+        }
+    }
 
     insert_ret insert_unique(const_reference value) {
         return emplace_unique(value);
@@ -692,9 +729,12 @@ public:
         return emplace_unique(estd::move(value));
     }
 
-    iterator insert_unique(iterator hint, const_reference value);
-
-    iterator insert_unique(iterator hint, rvalue_reference value);
+    template <typename It>
+    void insert_unique(It first, It last) {
+        while (first != last) {
+            insert_unique(*first);
+        }
+    }
 
     pair<iterator, iterator> equal_range_multi(const key_type &key) {
         return {lower_bound(key), upper_bound(key)};
@@ -711,7 +751,7 @@ public:
     iterator erase(iterator hint) {
         node_ptr node = hint.node;
         iterator next = ++iterator(node);
-        rb_tree_erase_rebalance(hint.node,root(),min_node(),max_node());
+        rb_tree_erase_rebalance(hint.node, root(), min_node(), max_node());
         destory_node(node);
         count_--;
         return next;
@@ -726,7 +766,12 @@ public:
         }
     }
 
-    size_type erase_multi(const key_type &key);
+    size_type erase_multi(const key_type &key) {
+        auto &&[first, last] = equal_range_multi(key);
+        size_t n = distance(first, last);
+        erase(first, last);
+        return n;
+    }
 
     size_type erase_unique(const key_type &key) {
         auto it = find(key);
@@ -813,6 +858,9 @@ private:
     node_base_ptr &min_node() {
         return header_->left;
     }
+    const node_base_ptr &min_node() const {
+        return header_->left;
+    }
     node_base_ptr &max_node() {
         return header_->right;
     }
@@ -822,7 +870,7 @@ private:
     key_type get_key(iterator it) {
         return tree_traits::value_traits::get_key(*it);
     }
-    pair<node_base_ptr,bool> insert_multi_pos(const key_type &key) {
+    pair<node_base_ptr, bool> insert_multi_pos(const key_type &key) {
         bool on_left = true;
         node_base_ptr child = root();
         node_base_ptr node = header_;
@@ -835,7 +883,7 @@ private:
 
         return {node, on_left};
     }
-    pair<pair<node_base_ptr,bool>, bool> insert_unique_pos(const key_type &key) {
+    pair<pair<node_base_ptr, bool>, bool> insert_unique_pos(const key_type &key) {
         bool on_left = true;
         node_base_ptr child = root();
         node_base_ptr node = header_;
@@ -884,10 +932,10 @@ private:
             }
         }
 
-        rb_tree_insert_rebalance(insert_node,root());
+        rb_tree_insert_rebalance(insert_node, root());
 
         count_++;
-        return iterator(node);
+        return iterator(insert_node);
     }
 
 
@@ -900,7 +948,7 @@ private:
     void destory_node(node_base_ptr node) {
         delete node->get_driver_ptr();
     }
-   
+
 private:
     node_base_ptr header_;
     size_type count_;
