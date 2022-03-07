@@ -477,7 +477,7 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
 
     if (!y->is_red()) {
         while (x != root && (!x || !x->is_red())) {
-            if (x == xp->left) {
+            if (x == xp->left && xp->right) {
                 auto brother = xp->right;
                 if (brother->is_red()) {
                     brother->set_color_black();
@@ -485,7 +485,8 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
                     rb_tree_rotate_left(xp, root);
                     brother = xp->right;
                 }
-
+                if(!brother)
+                  continue;
                 if ((!brother->left || !brother->left->is_red()) &&
                     (!brother->right || !brother->right->is_red())) {
                     brother->set_color_red();
@@ -504,7 +505,7 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
                     rb_tree_rotate_left(xp, root);
                     break;
                 }
-            } else {
+            } else if(x == xp->right && xp->left){
                 auto brother = xp->left;
                 if (brother->is_red()) {
                     brother->set_color_black();
@@ -512,6 +513,8 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
                     rb_tree_rotate_right(xp, root);
                     brother = xp->left;
                 }
+                if(!brother)
+                  continue;
                 if ((!brother->left || !brother->left->is_red()) &&
                     (!brother->right || !brother->right->is_red())) {
                     brother->set_color_red();
@@ -747,7 +750,10 @@ public:
         auto it = find(key);
         return it == end() ? make_pair(it, it) : make_pair(it++, it);
     }
-
+    pair<const_iterator, const_iterator> equal_range_unique(const key_type &key) const{
+        auto it = find(key);
+        return it == end() ? make_pair(it, it) : make_pair(it++, it);
+    }
     iterator erase(iterator hint) {
         auto node = hint.node;
         iterator next = ++iterator(node);
