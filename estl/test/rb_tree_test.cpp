@@ -200,9 +200,33 @@ TEST(RB_TREE_TEST,INTERFACE_TEST){
     EXPECT_EQ(n,10);
 
     //erase_multi
-    // n = tree.erase_multi(2);
-    // EXPECT_EQ(n,10);
+    n = tree.erase_multi(2);
+    EXPECT_EQ(n,10);
+    
+    it = tree.find(2);
+    ASSERT_TRUE(it == tree.end());
 
+    n = tree.erase_unique(12);
+    EXPECT_EQ(n,1);
+
+    estd::rb_tree<int> tree1;
+    
+    for(int i = 0;i < 10000; i++){
+       auto &&[pos,flag] = tree1.insert_unique(i);
+       ASSERT_TRUE(flag);
+    }
+
+    for(int i = 0;i < 100; i++){
+        n = tree1.erase_unique(i);
+        EXPECT_EQ(n,1);
+
+        int j = i + 1;
+        for(auto it : tree1){
+            EXPECT_EQ(it,j++);
+        }
+    }
+
+    
 }
 
 TEST(RB_TREE_TEST,OBJECT_TEST){
@@ -225,7 +249,24 @@ TEST(RB_TREE_TEST,OBJECT_TEST){
     auto it = tree.find(0);
     ASSERT_TRUE(it != tree.end());
     EXPECT_EQ(**it,0);
+    
+    tree.clear();
+    EXPECT_TRUE(tree.empty());
+
 
     A a(100);
+    tree.insert_unique(a);
 
+    ASSERT_TRUE(a.value != nullptr);
+
+    it = tree.find(100);
+
+    ASSERT_TRUE(it != tree.end());
+    EXPECT_EQ(**it,100);
+
+    tree.insert_multi(estd::move(a));
+    ASSERT_TRUE(a.value == nullptr);
+
+    size_t n = tree.count_multi(100);
+    EXPECT_EQ(n,2);
 }
