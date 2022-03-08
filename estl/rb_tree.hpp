@@ -596,14 +596,15 @@ public:
             insert_multi(it);
         }
     }
+    
     rb_tree(rb_tree &&rhs) noexcept : rb_tree() {
         rhs.swap(*this);
     }
-    rb_tree(const std::initializer_list<T> &list) : rb_tree() {
-        for (auto &it : list) {
-            insert_multi(it);
-        }
+
+    rb_tree(const std::initializer_list<T> &list,const Compare &c = Compare()) : rb_tree(c) {
+        insert_multi(list.begin(),list.end());
     }
+
 
     rb_tree &operator=(rb_tree rhs) {
         rhs.swap(*this);
@@ -640,6 +641,9 @@ public:
     }
     size_type size() {
         return count_;
+    }
+    Compare compare() const{
+        return compare_;
     }
 
     void clear() {
@@ -720,6 +724,7 @@ public:
     void insert_multi(It first, It last) {
         while (first != last) {
             insert_multi(*first);
+            first++;
         }
     }
 
@@ -735,6 +740,7 @@ public:
     void insert_unique(It first, It last) {
         while (first != last) {
             insert_unique(*first);
+            first++;
         }
     }
 
