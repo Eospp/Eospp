@@ -241,7 +241,7 @@ public:
     rb_tree_iterator operator--(int) {
         rb_tree_iterator current(*this);
         this->decrement();
-        return *this;
+        return current;
     }
 
     bool operator==(const rb_tree_iterator &rhs) const {
@@ -281,7 +281,7 @@ public:
     }
 
     rb_tree_const_iterator operator++(int) {
-        rb_tree_iterator current(*this);
+        rb_tree_const_iterator current(*this);
         this->increment();
         return current;
     }
@@ -292,9 +292,9 @@ public:
     }
 
     rb_tree_const_iterator operator--(int) {
-        rb_tree_iterator current(*this);
+        rb_tree_const_iterator current(*this);
         this->decrement();
-        return *this;
+        return current;
     }
 
     bool operator==(const rb_tree_const_iterator &rhs) {
@@ -552,6 +552,17 @@ size_t distance(rb_tree_iterator<T> first, rb_tree_iterator<T> last) {
     return n;
 }
 
+template <typename T>
+size_t distance(rb_tree_const_iterator<T> first, rb_tree_const_iterator<T> last) {
+    size_t n = 0;
+    while (first != last) {
+        first++;
+        n++;
+    }
+    return n;
+}
+
+
 
 template <typename T, typename Compare = estd::less<T>>
 class rb_tree {
@@ -567,7 +578,7 @@ public:
     using node_base_type = typename tree_traits::base_node_type;
     using node_base_ptr = typename tree_traits::base_node_ptr;
 
-    using const_reference = const T &;
+    using const_reference = typename tree_traits::const_reference;
     using rvalue_reference = T &&;
     using key_compare = Compare;
     using iterator = rb_tree_iterator<T>;
@@ -686,11 +697,11 @@ public:
         iterator it(node);
         return it == end() || compare_(key, get_key(node)) ? end() : it;
     }
-    size_type count_multi(const key_type &key) {
+    size_type count_multi(const key_type &key) const {
         auto &&[first, last] = equal_range_multi(key);
         return distance(first, last);
     }
-    size_type count_unique(const key_type &key) {
+    size_type count_unique(const key_type &key) const {
         return find(key) != end() ? 1 : 0;
     }
 
@@ -866,7 +877,7 @@ public:
     }
 
 private:
-    node_base_ptr &root() {
+    node_base_ptr &root() const {
         return header_->parent;
     }
     node_base_ptr &min_node() {
@@ -878,10 +889,10 @@ private:
     node_base_ptr &max_node() {
         return header_->right;
     }
-    key_type get_key(node_base_ptr node) {
+    const_reference get_key(node_base_ptr node) const {
         return tree_traits::value_traits::get_key(node->get_driver_ptr()->value);
     }
-    key_type get_key(iterator it) {
+    const_reference get_key(iterator it) const {
         return tree_traits::value_traits::get_key(*it);
     }
     pair<node_base_ptr, bool> insert_multi_pos(const key_type &key) {
