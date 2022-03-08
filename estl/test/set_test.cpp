@@ -308,9 +308,30 @@ TEST(MULTISET_TEST,INTERFACE_TEST){
     estd::multiset<int> s;
 
     for(int i = 0; i < 100; i++)
-       s.insert(i);
+       s.insert(1);
+
+    EXPECT_EQ(s.size(),100);
+
+    size_t n = s.count(1);
+
+    EXPECT_EQ(n,100);
     
+    auto [first,last] = s.euqal_range(1);
+    ASSERT_TRUE(last == s.end());
+    n = 0;
     
+    while(first != last){
+        EXPECT_EQ(*first,1);
+        n++;
+        first++;
+    }
+
+    EXPECT_EQ(n,100);
+
+    n = s.erase(1);
+    EXPECT_EQ(n,100);
+
+    EXPECT_TRUE(s.empty());
 }
 
 TEST(MULTISET_TEST,OBJECT_TEST){
