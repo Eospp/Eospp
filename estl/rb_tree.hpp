@@ -263,6 +263,9 @@ public:
     using const_refernce = const T &;
     using rb_tree_iterator_base<T>::rb_tree_iterator_base;
     using rb_tree_iterator_base<T>::node;
+    rb_tree_const_iterator() = default;
+
+    rb_tree_const_iterator(rb_tree_iterator<T> it) : rb_tree_iterator_base<T>(it.node){}
 
     const_pointer operator->() {
         return &node->get_driver_ptr()->value;
@@ -636,10 +639,10 @@ public:
         return header_;
     }
 
-    bool empty() {
+    bool empty() const {
         return size() == 0;
     }
-    size_type size() {
+    size_type size() const{
         return count_;
     }
     Compare compare() const{
