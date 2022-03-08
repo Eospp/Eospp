@@ -33,6 +33,7 @@ set(TEST_LISTS
     queue_test
     stack_test
     rb_tree_test
+    set_test
     )
 
 set(MEMORY_TESTS
@@ -42,7 +43,8 @@ set(MEMORY_TESTS
     deque_test
     queue_test
     stack_test
-    rb_tree_test)
+    rb_tree_test
+    set_test)
 
     foreach(Test ${TEST_LISTS})
     message(STATUS "build ${Test}")
