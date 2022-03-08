@@ -21,7 +21,7 @@ public:
 public:
     set() = default;
 
-    explicit set(const key_compare& compare = key_compare()) : tree_(compare) {}
+    explicit set(const key_compare& compare) : tree_(compare) {}
 
 
     set(const set& rhs) : tree_(rhs.tree_) {}
@@ -50,7 +50,7 @@ public:
         tree_.swap(rhs.tree_);
     }
 
-    key_compare kee_comp() const {
+    key_compare key_comp() const {
         return tree_.compare();
     }
 
@@ -167,7 +167,7 @@ public:
 public:
     multiset() = default;
 
-    explicit multiset(const key_compare& compare = key_compare()) : tree_(compare) {}
+    explicit multiset(const key_compare& compare) : tree_(compare) {}
 
 
     multiset(const multiset& rhs) : tree_(rhs.tree_) {}
@@ -196,7 +196,7 @@ public:
         tree_.swap(rhs.tree_);
     }
 
-    key_compare kee_comp() const {
+    key_compare key_comp() const {
         return tree_.compare();
     }
 
@@ -222,15 +222,15 @@ public:
     }
 
     template <typename... Args>
-    pair<iterator, bool> emplace(Args&&... args) {
+    iterator emplace(Args&&... args) {
         return tree_.emplace_multi(estd::forward<Args>(args)...);
     }
 
-    pair<iterator, bool> insert(const value_type& value) {
+    iterator insert(const value_type& value) {
         return tree_.insert_multi(value);
     }
 
-    pair<iterator, bool> insert(value_type&& value) {
+    iterator insert(value_type&& value) {
         return tree_.insert_multi(estd::move(value));
     }
 
