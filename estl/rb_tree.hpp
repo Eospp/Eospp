@@ -782,6 +782,15 @@ public:
         return hint;
     }
 
+    const_iterator erase(const_iterator hint) {
+        auto node = hint.node;
+        hint++;
+        rb_tree_erase_rebalance(node, root(), min_node(), max_node());
+        destory_node(node);
+        count_--;
+        return hint;
+    }
+
     void erase_since(node_base_ptr node) {
         while (node) {
             erase_since(node->right);
@@ -808,6 +817,16 @@ public:
     }
 
     void erase(iterator first, iterator last) {
+        if (first == begin() && last == end()) {
+            clear();
+        } else {
+            while (first != last) {
+                 erase(first++);
+            }
+        }
+    }
+
+    void erase(const_iterator first, const_iterator last) {
         if (first == begin() && last == end()) {
             clear();
         } else {
