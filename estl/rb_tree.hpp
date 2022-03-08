@@ -458,7 +458,6 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
         estd::swap(y->color, z->color);
         y = z;
     }
-
     else {
         xp = y->parent;
         if (x) x->parent = y->parent;
@@ -486,7 +485,7 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
                     brother = xp->right;
                 }
                 if(!brother)
-                  continue;
+                  break;
                 if ((!brother->left || !brother->left->is_red()) &&
                     (!brother->right || !brother->right->is_red())) {
                     brother->set_color_red();
@@ -514,7 +513,7 @@ rb_tree_node_base<T> *rb_tree_erase_rebalance(rb_tree_node_base<T> *z,
                     brother = xp->left;
                 }
                 if(!brother)
-                  continue;
+                  break;
                 if ((!brother->left || !brother->left->is_red()) &&
                     (!brother->right || !brother->right->is_red())) {
                     brother->set_color_red();
@@ -756,11 +755,11 @@ public:
     }
     iterator erase(iterator hint) {
         auto node = hint.node;
-        iterator next = ++iterator(node);
-        rb_tree_erase_rebalance(hint.node, root(), min_node(), max_node());
+        hint++;
+        rb_tree_erase_rebalance(node, root(), min_node(), max_node());
         destory_node(node);
         count_--;
-        return next;
+        return hint;
     }
 
     void erase_since(node_base_ptr node) {
@@ -793,7 +792,7 @@ public:
             clear();
         } else {
             while (first != last) {
-                erase(first++);
+                 erase(first++);
             }
         }
     }
