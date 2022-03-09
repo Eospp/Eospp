@@ -5,6 +5,8 @@ namespace estd{
     using uint32_t = unsigned int;
     using uint16_t = unsigned short;
     using uint8_t  = unsigned char;
+    using u_char   = unsigned char;
+    using uintptr_t= unsigned long int;
     using size_t   = uint64_t;
 
     static_assert(sizeof(uint64_t) == 8,"sizeof(uint64_t) != 8 bytes!");
