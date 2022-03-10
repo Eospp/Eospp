@@ -51,10 +51,11 @@ TEST(STRING_TEST,MEMMOVE_TEST){
     EXPECT_EQ(tmp,str);
     EXPECT_EQ(end - str,sizeof(str) - 2);
 
-    char hello_eospp[] = "hello eospp eospp";
+    char hello_eospp[] = "hello eospp hello";
     util::memmove(hello_eospp + 6,hello_eospp,11);
     tmp = "hello hello eospp";
     EXPECT_EQ(tmp,hello_eospp);
+
 }
 
 TEST(STRING_TEST,STRING_LEN_TEST){
@@ -77,6 +78,7 @@ TEST(STRING_TEST,STRING_COPY_TEST){
 TEST(STRING_TEST,STRING_SNPRINTF_TEST){
     char buf[1024];
     util::snprintf(buf,sizeof(buf),"hello %s %d","world",10);
+    EXPECT_EQ(strlen(buf),14);
     std::string str("hello world 10");
     EXPECT_EQ(str,buf);
 
