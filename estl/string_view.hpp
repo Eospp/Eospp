@@ -18,7 +18,7 @@ public:
 
     constexpr basic_string_view() : data_(nullptr), size_(0) {}
 
-    constexpr basic_string_view(const_pointer str) : data_(str), size_(strlen(str)) {}
+    constexpr basic_string_view(const_pointer str) : data_(str), size_(cstrlen(str)) {}
 
     constexpr basic_string_view(const_pointer str, size_t len) : data_(str), size_(len) {}
 
