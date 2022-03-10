@@ -48,8 +48,8 @@ void *memmove(void *dest, const void *src, estd::size_t n) {
     }
     // Reverse copying
 
-    uint64_t *dest64 = reinterpret_cast<uint64_t *>(dest8 + n - 1);
-    const uint64_t *src64 = reinterpret_cast<const uint64_t *>(src8 + n - 1);
+    uint64_t *dest64 = reinterpret_cast<uint64_t *>(dest8 + n);
+    const uint64_t *src64 = reinterpret_cast<const uint64_t *>(src8 + n);
 
     if (n >= 8) {
         size_t loop = n / 8;
