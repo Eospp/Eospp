@@ -98,10 +98,6 @@ char *sprintf_num(char *buf,
                   estd::uintptr_t hexadecimal,
                   estd::uintptr_t width) {
     u_char *p, temp[20 + 1];
-    /*
-     * we need temp[NGX_INT64_LEN] only,
-     * but icc issues the warning
-     */
     size_t len;
     uint32_t ui32;
     static u_char hex[] = "0123456789abcdef";
@@ -111,21 +107,6 @@ char *sprintf_num(char *buf,
 
     if (hexadecimal == 0) {
         if (ui64 <= (uint64_t)0xffffffff) {
-            /*
-             * To divide 64-bit numbers and to find remainders
-             * on the x86 platform gcc and icc call the libc functions
-             * [u]divdi3() and [u]moddi3(), they call another function
-             * in its turn.  On FreeBSD it is the qdivrem() function,
-             * its source code is about 170 lines of the code.
-             * The glibc counterpart is about 150 lines of the code.
-             *
-             * For 32-bit numbers and some divisors gcc and icc use
-             * a inlined multiplication and shifts.  For example,
-             * unsigned "i32 / 10" is compiled to
-             *
-             *     (i32 * 0xCCCCCCCD) >> 35
-             */
-
             ui32 = (uint32_t)ui64;
 
             do {
@@ -184,11 +165,6 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
     uint32_t width, sign, hex, max_width, frac_width, scale, n;
 
     while (*fmt && buf < last) {
-        /*
-         * "buf < last" means that we could copy at least one character:
-         * the plain character, "%%", "%c", and minus without the checking
-         */
-
         if (*fmt == '%') {
             i64 = 0;
             ui64 = 0;
@@ -204,7 +180,6 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
             while (*fmt >= '0' && *fmt <= '9') {
                 width = width * 10 + *fmt++ - '0';
             }
-
 
             for (;;) {
                 switch (*fmt) {
@@ -269,8 +244,6 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
                     fmt++;
 
                     continue;
-
-
                 case 'z':
                     if (sign) {
                         i64 = (int64_t)va_arg(args, signed int);
@@ -407,6 +380,10 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
         } else {
             *buf++ = *fmt++;
         }
+    }
+
+    if (buf < last) {
+        *buf++ = '\0';
     }
 
     return buf;
