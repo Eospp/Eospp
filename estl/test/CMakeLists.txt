@@ -32,6 +32,7 @@ set(TEST_LISTS
     deque_test
     queue_test
     stack_test
+    string_view_test
     rb_tree_test
     set_test
     algorithm_test
