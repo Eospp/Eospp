@@ -20,6 +20,6 @@ char *sprintf_num(char *buf,
 
 char *snprintf(char *buf, estd::size_t max, const char *fmt, ...);
 
-char *vslprintf(char *buf, estd::u_char *last, const char *fmt, va_list args);
+char *vslprintf(char *buf, char *last, const char *fmt, va_list args);
 
 }   // namespace eospp::util
