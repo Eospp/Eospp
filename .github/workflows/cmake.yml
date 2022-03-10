@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    name   : estl-test
+    name   : test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,15 +20,24 @@ jobs:
     - name: Install dependencies
       run : sudo apt-get update && sudo apt install libgtest-dev g++ cmake valgrind
    
-    - name: Create build directory
+    - name: Create estl test build directory
       run:  sudo mkdir estl/test/build
-      
-    - name: Build
-      # Build your program with the given configuration
+    
+    - name: Create kernel test build directory
+      run:  sudo mkdir kernel/test/build
+    
+    - name: Build-estl-test
       working-directory: ./estl/test/build
       run: sudo cmake .. && sudo make -j ${proc}
 
-    - name: Test
+    - name: Build-kernel-test
+      working-directory: ./kernel/test/build
+      run: sudo cmake .. && sudo make -j ${proc}
+
+    - name: Test-estl
       working-directory: ./estl/test/build
       run: sudo make test
-      
+    
+    - name: Test-kernel
+      working-directory: ./kernel/test/build
+      run: sudo make test
