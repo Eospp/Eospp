@@ -106,18 +106,9 @@ char *sprintf_num(char *buf,
     p = temp + 20;
 
     if (hexadecimal == 0) {
-        if (ui64 <= (uint64_t)0xffffffff) {
-            ui32 = (uint32_t)ui64;
-
-            do {
-                *--p = (u_char)(ui32 % 10 + '0');
-            } while (ui32 /= 10);
-
-        } else {
-            do {
-                *--p = (u_char)(ui64 % 10 + '0');
-            } while (ui64 /= 10);
-        }
+        do {
+            *--p = (u_char)(ui64 % 10 + '0');
+        } while (ui64 /= 10);
 
     } else if (hexadecimal == 1) {
         do {
