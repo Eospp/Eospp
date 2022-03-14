@@ -1,9 +1,9 @@
 #pragma once
 
 #include <allocator.hpp>
+#include <initializer_list>
 #include <pair.hpp>
 #include <utility.hpp>
-#include <initializer_list>
 namespace estd {
 
 template <typename T, typename alloc = allocator<T>>
@@ -12,16 +12,17 @@ class deque;
 template <typename T>
 class deque_iterator {
 public:
-    using containter = deque<remove_cv_t<T>>;
+    using containter         = deque<remove_cv_t<T>>;
     using containter_pointer = conditional_t<is_const_v<T>, const containter*, containter*>;
-    using value_type = T;
-    using size_type = size_t;
-    using pointer = add_pointer_t<T>;
-    using reference = add_lvalue_reference_t<T>;
-    using const_reference = add_const_t<add_lvalue_reference_t<T>>;
-    using diference_type = int64_t;
+    using value_type         = T;
+    using size_type          = size_t;
+    using pointer            = add_pointer_t<T>;
+    using reference          = add_lvalue_reference_t<T>;
+    using const_reference    = add_const_t<add_lvalue_reference_t<T>>;
+    using diference_type     = int64_t;
 
-    deque_iterator(containter_pointer deque, int64_t index) : deque_(deque), index_(index) {}
+    deque_iterator(containter_pointer deque, int64_t index)
+            : deque_(deque), index_(index) {}
 
     reference operator*() {
         return (*deque_)[index_];
@@ -96,37 +97,40 @@ private:
     int64_t index_;
 };
 
-
 template <typename T, typename alloc>
 class deque {
 public:
-    using value_type = T;
-    using pointer = add_pointer_t<T>;
-    using size_type = size_t;
-    using reference = add_lvalue_reference_t<T>;
-    using const_reference = const T&;
+    using value_type       = T;
+    using pointer          = add_pointer_t<T>;
+    using size_type        = size_t;
+    using reference        = add_lvalue_reference_t<T>;
+    using const_reference  = const T&;
     using rvalue_reference = add_rvalue_reference_t<T>;
-    using iterator = deque_iterator<T>;
-    using const_iterator = deque_iterator<const T>;
-    using control_block = T**;
+    using iterator         = deque_iterator<T>;
+    using const_iterator   = deque_iterator<const T>;
+    using control_block    = T**;
 
     constexpr static size_type block_elements = 16;
 
 public:
-    deque() : blocks_(nullptr), block_size_(0), size_(0), first_(0), last_(0) {}
+    deque()
+            : blocks_(nullptr), block_size_(0), size_(0), first_(0), last_(0) {}
 
-    deque(const deque& rhs) : deque() {
-        for (auto& it : rhs) push_back(it);
+    deque(const deque& rhs)
+            : deque() {
+        for (auto& it : rhs)
+            push_back(it);
     }
 
-    deque(deque&& rhs) noexcept : deque() {
+    deque(deque&& rhs) noexcept
+            : deque() {
         rhs.swap(*this);
     }
 
-    deque(std::initializer_list<T> list) : deque()
-    {
-        for(auto &it : list)
-           push_back(estd::move(it));
+    deque(std::initializer_list<T> list)
+            : deque() {
+        for (auto& it : list)
+            push_back(estd::move(it));
     }
     ~deque() {
         clear();
@@ -150,7 +154,6 @@ public:
         return *get_obj_pointer(pos);
     }
 
-
     reference front() {
         return (*this)[first_];
     }
@@ -159,14 +162,13 @@ public:
         return (*this)[first_];
     }
 
-    reference back(){
+    reference back() {
         return (*this)[last_];
     }
 
-    const_reference back() const{
+    const_reference back() const {
         return (*this)[last_];
     }
-
 
     void push_back(const_reference rhs) {
         emplace_back(rhs);
@@ -217,10 +219,10 @@ public:
         return const_iterator(this, last_ + 1);
     }
     void clear() {
-        if(!empty()){
+        if (!empty()) {
             destory(begin(), end());
 
-            size_ = 0;
+            size_  = 0;
             first_ = last_ = block_size_ / 2 * block_elements;
         }
     }
@@ -273,7 +275,7 @@ private:
 
         if (block_size_ == 0) {
             first_ = total_elements(new_blocks) - 1;
-            last_ = first_;
+            last_  = first_;
         } else {
             for (int i = 0; i < block_size_; i++) {
                 new_blocks_pointer[i + block_size_] = blocks_[i];
@@ -285,7 +287,6 @@ private:
         block_size_ += new_blocks;
         destory_control_blocks(new_blocks_pointer);
     }
-
 
     void ensure_capacity_back(size_type n) {
         size_type back_capacity = block_size_ == 0 ? 0 : total_elements(block_size_) - (last_ + 1);
@@ -300,7 +301,7 @@ private:
 
         if (block_size_ == 0) {
             first_ = 0;
-            last_ = 0;
+            last_  = 0;
         } else {
             for (int i = 0; i < block_size_; i++) {
                 new_blocks_pointer[i] = blocks_[i];
@@ -346,4 +347,4 @@ private:
     size_type first_;
     size_type last_;
 };
-}   // namespace estd
+} // namespace estd

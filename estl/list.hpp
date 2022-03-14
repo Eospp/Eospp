@@ -7,23 +7,23 @@ namespace estd {
 template <typename Driver>
 class list_node_base {
 public:
-    void link_next(list_node_base *rhs) {
+    void link_next(list_node_base* rhs) {
         if (next_) {
             next_->prv_ = rhs;
-            rhs->next_ = next_;
+            rhs->next_  = next_;
         }
 
-        next_ = rhs;
+        next_     = rhs;
         rhs->prv_ = this;
     }
-    void link_prv(list_node_base *rhs) {
+    void link_prv(list_node_base* rhs) {
         if (prv_) {
             prv_->next_ = rhs;
-            rhs->prv_ = prv_;
+            rhs->prv_   = prv_;
         }
 
         rhs->next_ = this;
-        prv_ = rhs;
+        prv_       = rhs;
     }
     void unlink_next() {
         if (next_) {
@@ -46,51 +46,53 @@ public:
         }
 
         next_ = nullptr;
-        prv_ = nullptr;
+        prv_  = nullptr;
     }
 
-    Driver *cast_to_driver() {
-        return static_cast<Driver *>(this);
+    Driver* cast_to_driver() {
+        return static_cast<Driver*>(this);
     }
 
-    const Driver *cast_to_driver() const {
-        return static_cast<const Driver *>(this);
+    const Driver* cast_to_driver() const {
+        return static_cast<const Driver*>(this);
     }
 
-
-    Driver *get_next() {
+    Driver* get_next() {
         return next_->cast_to_driver();
     }
 
-    const Driver *get_next() const {
+    const Driver* get_next() const {
         return next_->cast_to_driver();
     }
-    Driver *get_prv() {
+    Driver* get_prv() {
         return prv_->cast_to_driver();
     }
-    const Driver *get_prv() const {
+    const Driver* get_prv() const {
         return prv_->cast_to_driver();
     }
 
 private:
-    list_node_base *next_{nullptr};
-    list_node_base *prv_{nullptr};
+    list_node_base* next_{nullptr};
+    list_node_base* prv_{nullptr};
 };
 
 template <typename T>
 class list_node : public list_node_base<list_node<T>> {
 public:
-    using value_type = T;
-    using reference = T &;
-    using const_reference = const T &;
+    using value_type      = T;
+    using reference       = T&;
+    using const_reference = const T&;
 
 public:
-    list_node(const T &v) : value_(v) {}
+    list_node(const T& v)
+            : value_(v) {}
 
-    list_node(T &&v) : value_(estd::move(v)) {}
+    list_node(T&& v)
+            : value_(estd::move(v)) {}
 
     template <typename... Args>
-    list_node(Args &&...args) : value_(estd::forward<Args>(args)...) {}
+    list_node(Args&&... args)
+            : value_(estd::forward<Args>(args)...) {}
 
     reference get_value() {
         return value_;
@@ -98,11 +100,11 @@ public:
     const_reference get_value() const {
         return value_;
     }
-    list_node &operator=(list_node rhs) {
+    list_node& operator=(list_node rhs) {
         rhs.swap(*this);
         return *this;
     }
-    void swap(list_node &rhs) {
+    void swap(list_node& rhs) {
         estd::swap(value_, rhs.value_);
     }
 
@@ -113,14 +115,15 @@ private:
 template <typename T>
 class list_iterator {
 public:
-    using value_type = T;
-    using pointer = value_type *;
-    using node_type = list_node<T>;
-    using reference = T &;
-    using const_reference = const T &;
+    using value_type      = T;
+    using pointer         = value_type*;
+    using node_type       = list_node<T>;
+    using reference       = T&;
+    using const_reference = const T&;
 
 public:
-    explicit list_iterator(node_type *node) : current_(node) {}
+    explicit list_iterator(node_type* node)
+            : current_(node) {}
 
     reference operator*() {
         return current_->get_value();
@@ -134,49 +137,49 @@ public:
         return &current_->get_value();
     }
 
-    list_iterator &operator++() {
+    list_iterator& operator++() {
         current_ = current_->get_next();
         return *this;
     }
     list_iterator operator++(int) {
         list_iterator it = *this;
-        current_ = current_->get_next();
+        current_         = current_->get_next();
         return it;
     }
 
-    list_iterator &operator--() {
+    list_iterator& operator--() {
         current_ = current_->get_prv();
         return *this;
     }
 
     list_iterator operator--(int) {
         list_iterator it = *this;
-        current_ = current_->get_prv();
+        current_         = current_->get_prv();
         return it;
     }
 
-    bool operator==(const list_iterator &rhs) {
+    bool operator==(const list_iterator& rhs) {
         return current_ == rhs.current_;
     }
-    bool operator!=(const list_iterator &rhs) {
+    bool operator!=(const list_iterator& rhs) {
         return current_ != rhs.current_;
     }
 
-    node_type *current_;
+    node_type* current_;
 };
-
 
 template <typename T>
 class const_list_iterator {
 public:
-    using value_type = T;
-    using pointer = value_type *;
-    using node_type = list_node<T>;
-    using reference = const T &;
-    using const_reference = const T &;
+    using value_type      = T;
+    using pointer         = value_type*;
+    using node_type       = list_node<T>;
+    using reference       = const T&;
+    using const_reference = const T&;
 
 public:
-    explicit const_list_iterator(const node_type *node) : current_(node) {}
+    explicit const_list_iterator(const node_type* node)
+            : current_(node) {}
 
     reference operator*() {
         return current_->get_value();
@@ -190,76 +193,80 @@ public:
         return &current_->get_value();
     }
 
-    const_list_iterator &operator++() {
+    const_list_iterator& operator++() {
         current_ = current_->get_next();
         return *this;
     }
     const_list_iterator operator++(int) {
         const_list_iterator it = *this;
-        current_ = current_->get_next();
+        current_               = current_->get_next();
         return it;
     }
 
-    const_list_iterator &operator--() {
+    const_list_iterator& operator--() {
         current_ = current_->get_prv();
         return *this;
     }
 
     const_list_iterator operator--(int) {
         const_list_iterator it = *this;
-        current_ = current_->get_prv();
+        current_               = current_->get_prv();
         return it;
     }
 
-    bool operator==(const const_list_iterator &rhs) {
+    bool operator==(const const_list_iterator& rhs) {
         return current_ == rhs.current_;
     }
-    bool operator!=(const const_list_iterator &rhs) {
+    bool operator!=(const const_list_iterator& rhs) {
         return current_ != rhs.current_;
     }
 
-    const node_type *current_;
+    const node_type* current_;
 };
 
 template <typename T>
 class list {
 public:
-    using size_type = size_t;
-    using pointer = T *;
-    using value_type = T;
-    using reference = T &;
-    using const_reference = const T &;
-    using rvalue_reference = T &&;
-    using node_type = list_node<T>;
-    using base_type = list_node_base<node_type>;
-    using iterator = list_iterator<T>;
-    using const_iterator = const_list_iterator<T>;
+    using size_type        = size_t;
+    using pointer          = T*;
+    using value_type       = T;
+    using reference        = T&;
+    using const_reference  = const T&;
+    using rvalue_reference = T&&;
+    using node_type        = list_node<T>;
+    using base_type        = list_node_base<node_type>;
+    using iterator         = list_iterator<T>;
+    using const_iterator   = const_list_iterator<T>;
 
 public:
-    list() : list_size_(0) {
+    list()
+            : list_size_(0) {
         node_.link_next(&node_);
     }
 
-    list(const list &rhs) : list() {
-        for (auto &it : rhs) {
+    list(const list& rhs)
+            : list() {
+        for (auto& it : rhs) {
             push_back(it);
         }
     }
-    list(std::initializer_list<T> l) : list() {
-        for (auto &it : l) {
+    list(std::initializer_list<T> l)
+            : list() {
+        for (auto& it : l) {
             push_back(it);
         }
     }
-    list(list &&rhs) noexcept : list() {
+    list(list&& rhs) noexcept
+            : list() {
         rhs.swap(*this);
     }
 
-    list &operator=(list rhs) {
+    list& operator=(list rhs) {
         rhs.swap(*this);
         return *this;
     }
 
-    bool operator==(const list &rhs) {
+    bool operator==(const list& rhs) {
         if (size() != rhs.size()) {
             return false;
         }
@@ -276,8 +283,7 @@ public:
         return true;
     }
 
-    bool operator!=(const list &rhs)
-    {
+    bool operator!=(const list& rhs) {
         return !(*this == rhs);
     }
 
@@ -297,21 +303,21 @@ public:
     }
 
     iterator insert(iterator pos, const_reference value) {
-        node_type *link_node = create_node(value);
+        node_type* link_node = create_node(value);
         pos.current_->link_prv(link_node);
         list_size_++;
         return iterator(link_node);
     }
 
     iterator insert(iterator pos, rvalue_reference value) {
-        node_type *link_node = create_node(estd::move(value));
+        node_type* link_node = create_node(estd::move(value));
         pos.current_->link_prv(link_node);
         list_size_++;
         return iterator(link_node);
     }
 
     iterator erase(iterator pos) {
-        node_type *next = pos.current_->get_next();
+        node_type* next = pos.current_->get_next();
         pos.current_->unlink();
         list_size_--;
         destory_node(pos.current_);
@@ -320,11 +326,11 @@ public:
 
     iterator erase(iterator first, iterator last) {
         // erase [first,last)
-        node_type *prv = first.current_->get_prv();
+        node_type* prv = first.current_->get_prv();
         prv->unlink_next();
         size_type n = 0;
-        for (node_type *cur = first.current_; cur != last.current_; n++) {
-            node_type *tmp = cur->get_next();
+        for (node_type* cur = first.current_; cur != last.current_; n++) {
+            node_type* tmp = cur->get_next();
             destory_node(cur);
             cur = tmp;
         }
@@ -335,7 +341,7 @@ public:
 
     void pop_back() {
         if (!empty()) {
-            node_type *prv = node_.get_prv();
+            node_type* prv = node_.get_prv();
             prv->unlink();
             destory_node(prv);
             list_size_--;
@@ -344,7 +350,7 @@ public:
 
     void pop_front() {
         if (!empty()) {
-            node_type *next = node_.get_next();
+            node_type* next = node_.get_next();
             next->unlink();
             destory_node(next);
             list_size_--;
@@ -352,16 +358,16 @@ public:
     }
 
     template <typename... Args>
-    reference emplace_back(Args &&...args) {
-        node_type *link_node = create_node(estd::forward<Args>(args)...);
+    reference emplace_back(Args&&... args) {
+        node_type* link_node = create_node(estd::forward<Args>(args)...);
         node_.link_prv(link_node);
         list_size_++;
         return link_node->get_value();
     }
 
     template <typename... Args>
-    reference emplace_front(Args &&...args) {
-        node_type *link_node = create_node(estd::forward<Args>(args)...);
+    reference emplace_front(Args&&... args) {
+        node_type* link_node = create_node(estd::forward<Args>(args)...);
         node_.link_next(link_node);
         list_size_++;
         return link_node->get_value();
@@ -405,12 +411,12 @@ public:
         return list_size_;
     }
 
-    void swap(list &rhs) {
-        node_type *rhs_next = rhs.node_.get_next();
-        node_type *rhs_prv = rhs.node_.get_prv();
+    void swap(list& rhs) {
+        node_type* rhs_next = rhs.node_.get_next();
+        node_type* rhs_prv  = rhs.node_.get_prv();
 
-        node_type *lhs_next = node_.get_next();
-        node_type *lhs_prv = node_.get_prv();
+        node_type* lhs_next = node_.get_next();
+        node_type* lhs_prv  = node_.get_prv();
 
         rhs.node_.unlink_next();
         rhs.node_.unlink_prv();
@@ -438,14 +444,14 @@ public:
         if (empty()) {
             return;
         }
-        node_type *first = node_.get_next();
-        node_type *last = node_.get_prv();
+        node_type* first = node_.get_next();
+        node_type* last  = node_.get_prv();
         node_.unlink_prv();
         node_.unlink_next();
         node_.link_next(&node_);
         node_.link_prv(&node_);
 
-        for (node_type *cur = first; cur != nullptr;) {
+        for (node_type* cur = first; cur != nullptr;) {
             auto tmp = cur->get_next();
             destory_node(cur);
             cur = tmp;
@@ -459,11 +465,11 @@ public:
 
 private:
     template <typename... Args>
-    node_type *create_node(Args &&...args) {
+    node_type* create_node(Args&&... args) {
         return new node_type(estd::forward<Args>(args)...);
     }
 
-    void destory_node(node_type *link_node) {
+    void destory_node(node_type* link_node) {
         delete link_node;
     }
 
@@ -472,5 +478,4 @@ private:
     base_type node_;
 };
 
-
-}   // namespace estd
+} // namespace estd

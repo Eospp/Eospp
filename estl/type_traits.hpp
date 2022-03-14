@@ -4,8 +4,8 @@ namespace estd {
 
 template <typename T, T V>
 struct integral_constant {
-    using value_type = T;
-    using type = integral_constant<T, V>;
+    using value_type         = T;
+    using type               = integral_constant<T, V>;
     static constexpr T value = V;
 
     constexpr value_type operator()() const noexcept {
@@ -17,7 +17,7 @@ struct integral_constant {
     }
 };
 
-using true_type = integral_constant<bool, true>;
+using true_type  = integral_constant<bool, true>;
 using false_type = integral_constant<bool, false>;
 
 template <bool V>
@@ -602,7 +602,6 @@ struct is_base_of : bool_constant<__is_base_of(T, U)> {};
 template <typename T, typename U>
 constexpr inline bool is_base_of_v = is_base_of<T, U>::value;
 
-
 template <typename T>
 struct is_final : bool_constant<__is_final(T)> {};
 
@@ -638,46 +637,44 @@ template <typename T>
 struct is_trivially_default_constructible : is_trivially_constructible<T>::type {};
 
 template <typename T>
-struct is_trivially_destructible : public bool_constant<__has_trivial_destructor(T)>{};
+struct is_trivially_destructible : public bool_constant<__has_trivial_destructor(T)> {};
 
-template<typename T>
+template <typename T>
 constexpr inline bool is_trivially_destructible_v = is_trivially_destructible<T>::value;
 
 template <typename T>
 struct has_virtual_destructor : public integral_constant<bool, __has_virtual_destructor(T)> {};
 
-template<typename T>
+template <typename T>
 constexpr inline bool has_virtual_destructor_v = has_virtual_destructor<T>::value;
 
 template <size_t N, typename... Args>
 using nth_type_t = typename nth_type<0, N, Args...>::type;
 
-template<typename T1,typename T2>
+template <typename T1, typename T2>
 class pair;
 
-template<typename T>
-struct is_pair : false_type{};
+template <typename T>
+struct is_pair : false_type {};
 
-template<typename T1,typename T2>
-struct is_pair<pair<T1,T2>> : true_type{};
+template <typename T1, typename T2>
+struct is_pair<pair<T1, T2>> : true_type {};
 
-template<typename T>
+template <typename T>
 constexpr inline bool is_pair_v = is_pair<T>::value;
 
-#define HasMember(member)                                                                          \
-    template <typename T, typename = void>                                                         \
-    struct has_member_##member : estd::false_type {};                                              \
-                                                                                                   \
-    template <typename T>                                                                          \
+#define HasMember(member)                             \
+    template <typename T, typename = void>            \
+    struct has_member_##member : estd::false_type {}; \
+                                                      \
+    template <typename T>                             \
     struct has_member_##member<T, estd::void_t<decltype(T::member)>> : estd::true_type {};
 
-
-#define HasType(type)                                                                              \
-    template <typename T, typename = void>                                                         \
-    struct has_member_##type : estd::false_type {};                                                \
-                                                                                                   \
-    template <typename T>                                                                          \
+#define HasType(type)                               \
+    template <typename T, typename = void>          \
+    struct has_member_##type : estd::false_type {}; \
+                                                    \
+    template <typename T>                           \
     struct has_member_##type<T, estd::void_t<typename T::type>> : estd::true_type {};
 
-
-}   // namespace estd
+} // namespace estd

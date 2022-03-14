@@ -5,17 +5,19 @@ namespace eospp::util {
 
 using namespace estd;
 
-void *memcpy(void *dest, const void *src, estd::size_t n) {
-    if (!dest || !src || n == 0) return dest;
+void* memcpy(void* dest, const void* src, estd::size_t n) {
+    if (!dest || !src || n == 0)
+        return dest;
 
-    if (dest == src) return static_cast<char *>(dest) + n;
+    if (dest == src)
+        return static_cast<char*>(dest) + n;
 
-    char *dest8 = reinterpret_cast<char *>(dest);
-    const char *src8 = reinterpret_cast<const char *>(src);
+    char* dest8      = reinterpret_cast<char*>(dest);
+    const char* src8 = reinterpret_cast<const char*>(src);
 
     if (n >= 8) {
-        uint64_t *dest64 = reinterpret_cast<uint64_t *>(dest);
-        const uint64_t *src64 = reinterpret_cast<const uint64_t *>(src);
+        uint64_t* dest64      = reinterpret_cast<uint64_t*>(dest);
+        const uint64_t* src64 = reinterpret_cast<const uint64_t*>(src);
 
         size_t loop = n / 8;
 
@@ -35,21 +37,23 @@ void *memcpy(void *dest, const void *src, estd::size_t n) {
     return dest8 + n;
 }
 
-void *memmove(void *dest, const void *src, estd::size_t n) {
-    if (!dest || !src || n == 0) return dest;
+void* memmove(void* dest, const void* src, estd::size_t n) {
+    if (!dest || !src || n == 0)
+        return dest;
 
-    if (dest == src) return static_cast<char *>(dest) + n;
+    if (dest == src)
+        return static_cast<char*>(dest) + n;
 
-    uint8_t *dest8 = reinterpret_cast<uint8_t *>(dest);
-    const uint8_t *src8 = reinterpret_cast<const uint8_t *>(src);
+    uint8_t* dest8      = reinterpret_cast<uint8_t*>(dest);
+    const uint8_t* src8 = reinterpret_cast<const uint8_t*>(src);
     // no overlap
     if (dest8 < src8) {
         return memcpy(dest8, src8, n);
     }
     // Reverse copying
 
-    uint64_t *dest64 = reinterpret_cast<uint64_t *>(dest8 + n);
-    const uint64_t *src64 = reinterpret_cast<const uint64_t *>(src8 + n);
+    uint64_t* dest64      = reinterpret_cast<uint64_t*>(dest8 + n);
+    const uint64_t* src64 = reinterpret_cast<const uint64_t*>(src8 + n);
 
     if (n >= 8) {
         size_t loop = n / 8;
@@ -69,12 +73,14 @@ void *memmove(void *dest, const void *src, estd::size_t n) {
     return dest64;
 }
 
-char *strcpy(char *dest, const char *src) {
-    if (!dest || !src) return dest;
+char* strcpy(char* dest, const char* src) {
+    if (!dest || !src)
+        return dest;
 
-    if (dest == src) return dest;
+    if (dest == src)
+        return dest;
 
-    char *str = dest;
+    char* str = dest;
 
     do {
         *(dest++) = *(src++);
@@ -83,16 +89,15 @@ char *strcpy(char *dest, const char *src) {
     return str;
 }
 
-
-estd::size_t strlen(const char *str) {
+estd::size_t strlen(const char* str) {
     estd::size_t n = 0;
-    while (*(str++) != '\0') n++;
+    while (*(str++) != '\0')
+        n++;
     return n;
 }
 
-
-char *sprintf_num(char *buf,
-                  char *last,
+char* sprintf_num(char* buf,
+                  char* last,
                   estd::uint64_t ui64,
                   estd::u_char zero,
                   estd::uintptr_t hexadecimal,
@@ -142,11 +147,10 @@ char *sprintf_num(char *buf,
         len = last - buf;
     }
 
-    return static_cast<char *>(memcpy(buf, p, len));
+    return static_cast<char*>(memcpy(buf, p, len));
 }
 
-
-char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
+char* vslprintf(char* buf, char* last, const char* fmt, va_list args) {
     u_char *p, zero;
     int d;
     double f;
@@ -157,16 +161,16 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
 
     while (*fmt && buf < last) {
         if (*fmt == '%') {
-            i64 = 0;
+            i64  = 0;
             ui64 = 0;
 
-            zero = (u_char)((*++fmt == '0') ? '0' : ' ');
-            width = 0;
-            sign = 1;
-            hex = 0;
-            max_width = 0;
+            zero       = (u_char)((*++fmt == '0') ? '0' : ' ');
+            width      = 0;
+            sign       = 1;
+            hex        = 0;
+            max_width  = 0;
             frac_width = 0;
-            slen = (size_t)-1;
+            slen       = (size_t)-1;
 
             while (*fmt >= '0' && *fmt <= '9') {
                 width = width * 10 + *fmt++ - '0';
@@ -185,13 +189,13 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
                         continue;
 
                     case 'X':
-                        hex = 2;
+                        hex  = 2;
                         sign = 0;
                         fmt++;
                         continue;
 
                     case 'x':
-                        hex = 1;
+                        hex  = 1;
                         sign = 0;
                         fmt++;
                         continue;
@@ -217,10 +221,9 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
                 break;
             }
 
-
             switch (*fmt) {
                 case 's':
-                    p = va_arg(args, u_char *);
+                    p = va_arg(args, u_char*);
 
                     if (slen == (size_t)-1) {
                         while (*p && buf < last) {
@@ -229,7 +232,7 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
 
                     } else {
                         len = estd::min(((size_t)(last - buf)), slen);
-                        buf = (char *)memcpy(buf, p, len);
+                        buf = (char*)memcpy(buf, p, len);
                     }
 
                     fmt++;
@@ -293,7 +296,7 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
 
                     if (f < 0) {
                         *buf++ = '-';
-                        f = -f;
+                        f      = -f;
                     }
 
                     ui64 = (int64_t)f;
@@ -328,15 +331,15 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
                     continue;
 
                 case 'p':
-                    ui64 = (uintptr_t)va_arg(args, void *);
-                    hex = 2;
-                    sign = 0;
-                    zero = '0';
+                    ui64  = (uintptr_t)va_arg(args, void*);
+                    hex   = 2;
+                    sign  = 0;
+                    zero  = '0';
                     width = 8 * 2;
                     break;
 
                 case 'c':
-                    d = va_arg(args, int);
+                    d      = va_arg(args, int);
                     *buf++ = (u_char)(d & 0xff);
                     fmt++;
 
@@ -357,7 +360,7 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
             if (sign) {
                 if (i64 < 0) {
                     *buf++ = '-';
-                    ui64 = (uint64_t)-i64;
+                    ui64   = (uint64_t)-i64;
 
                 } else {
                     ui64 = (uint64_t)i64;
@@ -380,8 +383,8 @@ char *vslprintf(char *buf, char *last, const char *fmt, va_list args) {
     return buf;
 }
 
-char *snprintf(char *buf, estd::size_t max, const char *fmt, ...) {
-    char *p;
+char* snprintf(char* buf, estd::size_t max, const char* fmt, ...) {
+    char* p;
     va_list args;
 
     va_start(args, fmt);
@@ -390,4 +393,4 @@ char *snprintf(char *buf, estd::size_t max, const char *fmt, ...) {
     return p;
 }
 
-}   // namespace eospp::util
+} // namespace eospp::util

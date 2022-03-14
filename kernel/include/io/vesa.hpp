@@ -1,9 +1,9 @@
 #pragma once
-#include <type.hpp>
 #include <string_view.hpp>
+#include <type.hpp>
 namespace eospp::io {
 //ARGB
-enum Color : int{
+enum Color : int {
     WHITE  = 0x00ffffff,
     BLACK  = 0x00000000,
     RED    = 0x00ff0000,
@@ -15,25 +15,23 @@ enum Color : int{
     PURPLE = 0x008000ff
 };
 
-
 class Vesa {
 public:
     static bool Init();
 
-    void  ColorPrint(Color font_color,Color bg_color,estd::string_view str);
-    void  PutChar(Color font_color,Color bg_color,estd::uint8_t c);
-private:
-    int             *screen_;
-    int             screen_width_;
-    int             screen_height_;
-    int             width_char_size_;
-    int             height_char_size_;
-    int             xpos_;
-    int             ypos_;
+    void ColorPrint(Color font_color, Color bg_color, estd::string_view str);
+    void PutChar(Color font_color, Color bg_color, estd::uint8_t c);
 
+private:
+    int* screen_;
+    int screen_width_;
+    int screen_height_;
+    int width_char_size_;
+    int height_char_size_;
+    int xpos_;
+    int ypos_;
 };
 
-void printf(const char* fmt,...);
+void printf(const char* fmt, ...);
 
-
-}   // namespace eospp::io
+} // namespace eospp::io

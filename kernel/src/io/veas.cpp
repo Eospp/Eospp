@@ -329,7 +329,7 @@ void printf(const char* fmt, ...) {
 }
 
 bool Vesa::Init() {
-    vesa.screen_ = (int*)(0xffff800000a00000);
+    vesa.screen_ = reinterpret_cast<int*>(0xffff800000a00000);
     vesa.ypos_ = 0;
     vesa.xpos_ = 0;
     vesa.width_char_size_   = 8;
@@ -354,7 +354,6 @@ void Vesa::PutChar(Color font_color, Color bg_color, estd::uint8_t c) {
         }
         font++;
     }
-
  
 }
 void Vesa::ColorPrint(Color font_color, Color bg_color, estd::string_view str) {

@@ -1,63 +1,64 @@
 #pragma once
 
 #include <allocator.hpp>
-#include <iterator.hpp>
 #include <initializer_list>
+#include <iterator.hpp>
 namespace estd {
 
 template <typename T, typename alloc = allocator<T>>
 class vector {
 public:
-    using value_type = T;
-    using reference = T &;
-    using pointer = T *;
-    using const_pointer = const T *;
-    using const_reference = const T &;
-    using iterator = normal_iterator<pointer, vector>;
-    using const_iterator = normal_iterator<const_pointer, vector>;
+    using value_type             = T;
+    using reference              = T&;
+    using pointer                = T*;
+    using const_pointer          = const T*;
+    using const_reference        = const T&;
+    using iterator               = normal_iterator<pointer, vector>;
+    using const_iterator         = normal_iterator<const_pointer, vector>;
     using const_reverse_iterator = estd::reverse_iterator<const_iterator>;
-    using reverse_iterator = estd::reverse_iterator<iterator>;
-    using size_type = size_t;
-    using diference_type = ptrdiff_t;
+    using reverse_iterator       = estd::reverse_iterator<iterator>;
+    using size_type              = size_t;
+    using diference_type         = ptrdiff_t;
 
-    vector() : M_start_(nullptr), M_finish_(nullptr), M_end_of_storage_(nullptr) {}
-    vector(std::initializer_list<T> list)
-    {
+    vector()
+            : M_start_(nullptr), M_finish_(nullptr), M_end_of_storage_(nullptr) {}
+    vector(std::initializer_list<T> list) {
         allocate(list.size());
 
-        for(auto &it : list)
-          push_back(it);
+        for (auto& it : list)
+            push_back(it);
     }
-    vector(size_type size, const T &v) {
+    vector(size_type size, const T& v) {
         allocate(size);
 
-        for(size_t i = 0;i < size; i++)
-           construct(M_start_ + i,v);
+        for (size_t i = 0; i < size; i++)
+            construct(M_start_ + i, v);
 
         M_finish_ = M_start_ + size;
     }
 
-    explicit vector(size_type size)
-    {
+    explicit vector(size_type size) {
         allocate(size);
 
-        for(size_t i = 0;i < size; i++)
-           construct(M_start_ + i);
-        
+        for (size_t i = 0; i < size; i++)
+            construct(M_start_ + i);
+
         M_finish_ = M_start_ + size;
     }
 
-    vector(const vector &rhs) : vector() {
+    vector(const vector& rhs)
+            : vector() {
         if (!rhs.empty()) {
             allocate(rhs.size());
 
-            for (auto &it : rhs) {
+            for (auto& it : rhs) {
                 construct(M_finish_++, it);
             }
         }
     }
 
-    vector(vector &&rhs) noexcept : vector() {
+    vector(vector&& rhs) noexcept
+            : vector() {
         rhs.swap(*this);
     }
 
@@ -71,17 +72,17 @@ public:
         }
     }
 
-    void push_back(const value_type &v) {
+    void push_back(const value_type& v) {
         ensure_capacity(size() + 1);
         construct(M_finish_++, v);
     }
 
-    void push_back(value_type &&v) {
+    void push_back(value_type&& v) {
         ensure_capacity(size() + 1);
         construct(M_finish_++, estd::move(v));
     }
 
-    void push_front(const value_type &v) {
+    void push_front(const value_type& v) {
         ensure_capacity(size() + 1);
         construct(M_finish_);
         for (size_type i = 0; i < size(); i++) {
@@ -93,7 +94,7 @@ public:
         M_finish_++;
     }
 
-    void push_front(value_type &&v) {
+    void push_front(value_type&& v) {
         ensure_capacity(size() + 1);
         construct(M_finish_);
         for (size_type i = 0; i < size(); i++) {
@@ -105,7 +106,7 @@ public:
         M_finish_++;
     }
 
-    void insert(iterator pos, const value_type &v) {
+    void insert(iterator pos, const value_type& v) {
         size_type index = pos - begin();
 
         ensure_capacity(size() + 1);
@@ -119,12 +120,11 @@ public:
         M_finish_++;
     }
 
-    void insert(iterator pos, value_type &&v) {
+    void insert(iterator pos, value_type&& v) {
         size_type index = pos - begin();
 
         ensure_capacity(size() + 1);
         construct(M_finish_);
-
 
         for (size_type i = size(); i > index; i--) {
             M_start_[i] = estd::move(M_start_[i - 1]);
@@ -136,7 +136,7 @@ public:
     }
 
     template <typename... Args>
-    reference emplace(iterator pos, Args &&...args) {
+    reference emplace(iterator pos, Args&&... args) {
         size_type index = pos - begin();
 
         ensure_capacity(size() + 1);
@@ -170,7 +170,7 @@ public:
     iterator erase(iterator first, iterator last) {
         size_type src = last - begin();
         size_type des = first - begin();
-        size_type n = end() - last;
+        size_type n   = end() - last;
 
         for (size_type i = 0; i < n; i++) {
             M_start_[des + i] = estd::move(M_start_[i + src]);
@@ -194,23 +194,24 @@ public:
     }
 
     template <typename... Args>
-    reference emplace_back(Args &&...args) {
+    reference emplace_back(Args&&... args) {
         ensure_capacity(size() + 1);
         construct(M_finish_++, estd::forward<Args>(args)...);
         return *(M_finish_ - 1);
     }
 
-
-    vector &operator=(vector rhs) {
+    vector& operator=(vector rhs) {
         rhs.swap(*this);
         return *this;
     }
 
-    bool operator==(const vector &rhs) const {
-        if (size() != rhs.size()) return false;
+    bool operator==(const vector& rhs) const {
+        if (size() != rhs.size())
+            return false;
 
         for (int i = 0; i < size(); i++) {
-            if (data()[i] != rhs[i]) return false;
+            if (data()[i] != rhs[i])
+                return false;
         }
 
         return true;
@@ -244,12 +245,11 @@ public:
         return size() == 0;
     }
 
-    void swap(vector &rhs) {
+    void swap(vector& rhs) {
         estd::swap(M_start_, rhs.M_start_);
         estd::swap(M_finish_, rhs.M_finish_);
         estd::swap(M_end_of_storage_, rhs.M_end_of_storage_);
     }
-
 
     void resize(size_type new_size) {
         if (new_size > size()) {
@@ -316,15 +316,16 @@ public:
 
 private:
     void allocate(size_type capacity) {
-        M_start_ = alloc::allocate(capacity);
-        M_finish_ = M_start_;
+        M_start_          = alloc::allocate(capacity);
+        M_finish_         = M_start_;
         M_end_of_storage_ = M_start_ + capacity;
     }
 
     void ensure_capacity(size_type size) {
         size_t now_capacity = capacity();
 
-        if (now_capacity >= size) return;
+        if (now_capacity >= size)
+            return;
 
         size_type new_capacity = now_capacity * 2 > size ? now_capacity * 2 : size;
 
@@ -332,8 +333,7 @@ private:
 
         allocate(new_capacity);
 
-        for(auto &it : v)
-        {
+        for (auto& it : v) {
             push_back(estd::move(it));
         }
     }
@@ -345,8 +345,8 @@ private:
 };
 
 template <typename T>
-inline void swap(estd::vector<T> &lhs, estd::vector<T> &rhs) {
+inline void swap(estd::vector<T>& lhs, estd::vector<T>& rhs) {
     lhs.swap(rhs);
 }
 
-}   // namespace estd
+} // namespace estd

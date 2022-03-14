@@ -7,27 +7,27 @@ namespace estd {
 template <typename Fn, typename = void>
 struct invoke_function {
     template <typename... Args>
-    static constexpr decltype(auto) call(const Fn &fn, Args &&... args) {
+    static constexpr decltype(auto) call(const Fn& fn, Args&&... args) {
         return fn(estd::forward<Args>(args)...);
     }
 };
 template <typename Fn>
 struct invoke_function<Fn, void_t<enable_if_t<is_pointer_v<decay_t<Fn>>>>> {
     template <typename... Args>
-    static constexpr decltype(auto) call(const Fn &fn, Args &&... args) {
+    static constexpr decltype(auto) call(const Fn& fn, Args&&... args) {
         return (*fn)(estd::forward<Args>(args)...);
     }
 };
 
 struct invoke_member_function {
     template <typename Fn, typename T, typename... Args>
-    static constexpr auto call(Fn &&fn, T &&obj, Args &&... args)
+    static constexpr auto call(Fn&& fn, T&& obj, Args&&... args)
         -> decltype((obj.*fn)(estd::forward<Args>(args)...)) {
         return (obj.*fn)(estd::forward<Args>(args)...);
     }
 
     template <typename Fn, typename T, typename... Args>
-    static constexpr auto call(Fn &&fn, T &&obj, Args &&... args)
+    static constexpr auto call(Fn&& fn, T&& obj, Args&&... args)
         -> decltype((obj->*fn)(estd::forward<Args>(args)...)) {
         return (obj->*fn)(estd::forward<Args>(args)...);
     }
@@ -52,17 +52,17 @@ template <typename Fn, typename T, typename... Args>
 struct invoke_impl<Fn, T, Args...> : invoke_helper<Fn, T> {};
 
 template <typename Fn, typename... Args>
-constexpr decltype(auto) invoke(Fn &&fn, Args &&... args) {
+constexpr decltype(auto) invoke(Fn&& fn, Args&&... args) {
     return invoke_impl<Fn, Args...>::call(estd::forward<Fn>(fn), estd::forward<Args>(args)...);
 }
 
 template <typename Fn, typename T, estd::size_t... I>
-constexpr decltype(auto) apply_impl(Fn &&fn, T &&t, estd::index_sequence<I...>) {
+constexpr decltype(auto) apply_impl(Fn&& fn, T&& t, estd::index_sequence<I...>) {
     return invoke(fn, estd::get<I>(t)...);
 }
 
 template <typename Fn, typename T>
-constexpr decltype(auto) apply(Fn &&fn, T &&t) {
+constexpr decltype(auto) apply(Fn&& fn, T&& t) {
     return apply_impl(
         estd::forward<Fn>(fn), estd::forward<T>(t), estd::make_index_sequence<t.size()>());
 }
@@ -70,27 +70,31 @@ constexpr decltype(auto) apply(Fn &&fn, T &&t) {
 template <typename R, typename... Args>
 class interface {
 public:
-    virtual R operator()(const Args &... args) = 0;
+    virtual R operator()(const Args&... args) = 0;
 
-    virtual interface<R, Args...> *clone() = 0;
+    virtual interface<R, Args...>* clone() = 0;
 };
 
 template <typename Fn, typename R, typename... Args>
 class function_helper : public interface<R, Args...> {
 public:
-    function_helper(const Fn &f) : f_(f) {}
+    function_helper(const Fn& f)
+            : f_(f) {}
 
-    function_helper(Fn &&f) : f_(estd::move(f)) {}
+    function_helper(Fn&& f)
+            : f_(estd::move(f)) {}
 
-    function_helper(const function_helper &rhs) : f_(rhs.f_) {}
+    function_helper(const function_helper& rhs)
+            : f_(rhs.f_) {}
 
-    function_helper(function_helper &&rhs) : f_(estd::move(rhs.f_)) {}
+    function_helper(function_helper&& rhs)
+            : f_(estd::move(rhs.f_)) {}
 
-    virtual R operator()(const Args &... args) override {
+    virtual R operator()(const Args&... args) override {
         return estd::invoke(f_, args...);
     }
 
-    virtual interface<R, Args...> *clone() override {
+    virtual interface<R, Args...>* clone() override {
         return new function_helper<Fn, R, Args...>(f_);
     }
 
@@ -107,11 +111,14 @@ public:
     function() = default;
 
     template <typename Fn, typename = enable_if_t<!is_same_v<function, decay_t<Fn>>>>
-    function(Fn &&f) : impl_(new function_helper<Fn, R, Args...>(estd::forward<Fn>(f))) {}
+    function(Fn&& f)
+            : impl_(new function_helper<Fn, R, Args...>(estd::forward<Fn>(f))) {}
 
-    function(const function &rhs) : impl_(rhs.impl_->clone()) {}
+    function(const function& rhs)
+            : impl_(rhs.impl_->clone()) {}
 
-    function(function &&rhs) noexcept : impl_(rhs.impl_) {
+    function(function&& rhs) noexcept
+            : impl_(rhs.impl_) {
         rhs.impl_ = nullptr;
     }
 
@@ -121,16 +128,16 @@ public:
     }
 
     template <typename Fn>
-    function &operator=(Fn &&f) {
+    function& operator=(Fn&& f) {
         function(estd::forward<Fn>(f)).swap(*this);
         return *this;
     }
 
-    function &operator=(function rhs) {
+    function& operator=(function rhs) {
         rhs.swap(*this);
         return *this;
     }
-    void swap(function &rhs) {
+    void swap(function& rhs) {
         estd::swap(impl_, rhs.impl_);
     }
 
@@ -139,11 +146,12 @@ public:
     }
 
     ~function() {
-        if (impl_) delete impl_;
+        if (impl_)
+            delete impl_;
     }
 
 private:
-    interface<R, Args...> *impl_{nullptr};
+    interface<R, Args...>* impl_{nullptr};
 };
 
-}   // namespace estd
+} // namespace estd

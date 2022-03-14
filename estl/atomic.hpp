@@ -13,7 +13,7 @@ enum class memory_order : int {
 enum memory_order_modifier { memory_order_mask = 0x0ffff };
 
 constexpr inline memory_order memory_order_relaxed = memory_order::relaxed;
-constexpr inline memory_order memory_order_consum = memory_order::consume;
+constexpr inline memory_order memory_order_consum  = memory_order::consume;
 constexpr inline memory_order memory_order_acquire = memory_order::acquire;
 constexpr inline memory_order memory_order_release = memory_order::release;
 constexpr inline memory_order memory_order_acq_rel = memory_order::acq_rel;
@@ -24,10 +24,11 @@ class atomic_impl : NoCopyAble {
 public:
     using value_type = T;
 
-    atomic_impl() noexcept = default;
+    atomic_impl() noexcept  = default;
     ~atomic_impl() noexcept = default;
 
-    constexpr atomic_impl(value_type v) noexcept : value_(v) {}
+    constexpr atomic_impl(value_type v) noexcept
+            : value_(v) {}
 
     value_type load(memory_order m = memory_order_seq_cst) const noexcept {
         return __atomic_load_n(&value_, static_cast<int>(m));
@@ -269,7 +270,8 @@ class atomic<bool> : NoCopyAble {
 public:
     using value_type = bool;
 
-    constexpr atomic(bool v) noexcept : value_(v) {}
+    constexpr atomic(bool v) noexcept
+            : value_(v) {}
 
     bool operator=(bool v) noexcept {
         return value_.operator=(v);
@@ -336,4 +338,4 @@ private:
     atomic_impl<bool> value_;
 };
 
-}   // namespace estd
+} // namespace estd

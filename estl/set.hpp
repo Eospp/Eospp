@@ -2,38 +2,40 @@
 #include <rb_tree.hpp>
 namespace estd {
 
-
 template <typename T, typename Compare = estd::less<T>>
 class set {
 public:
-    using key_type = T;
-    using value_type = T;
+    using key_type    = T;
+    using value_type  = T;
     using key_compare = Compare;
-    using tree_type = rb_tree<value_type, key_compare>;
+    using tree_type   = rb_tree<value_type, key_compare>;
 
-    using node_type = typename tree_type::node_type;
-    using reference = typename tree_type::const_reference;
+    using node_type       = typename tree_type::node_type;
+    using reference       = typename tree_type::const_reference;
     using const_reference = typename tree_type::const_reference;
-    using iterator = typename tree_type::const_iterator;
-    using const_iterator = typename tree_type::const_iterator;
-    using size_type = typename tree_type::size_type;
+    using iterator        = typename tree_type::const_iterator;
+    using const_iterator  = typename tree_type::const_iterator;
+    using size_type       = typename tree_type::size_type;
 
 public:
     set() = default;
 
-    explicit set(const key_compare& compare) : tree_(compare) {}
+    explicit set(const key_compare& compare)
+            : tree_(compare) {}
 
+    set(const set& rhs)
+            : tree_(rhs.tree_) {}
 
-    set(const set& rhs) : tree_(rhs.tree_) {}
-
-    set(set&& rhs) noexcept : tree_(estd::move(rhs.tree_)) {}
+    set(set&& rhs) noexcept
+            : tree_(estd::move(rhs.tree_)) {}
 
     set(const std::initializer_list<value_type>& list) {
         tree_.insert_unique(list.begin(), list.end());
     }
 
     template <typename It>
-    set(It first, It last, const key_compare& compare = key_compare()) : set(compare) {
+    set(It first, It last, const key_compare& compare = key_compare())
+            : set(compare) {
         tree_.insert_unique(first, last);
     }
 
@@ -148,38 +150,40 @@ private:
     tree_type tree_;
 };
 
-
 template <typename T, typename Compare = estd::less<T>>
 class multiset {
 public:
-    using key_type = T;
-    using value_type = T;
+    using key_type    = T;
+    using value_type  = T;
     using key_compare = Compare;
-    using tree_type = rb_tree<value_type, key_compare>;
+    using tree_type   = rb_tree<value_type, key_compare>;
 
-    using node_type = typename tree_type::node_type;
-    using reference = typename tree_type::const_reference;
+    using node_type       = typename tree_type::node_type;
+    using reference       = typename tree_type::const_reference;
     using const_reference = typename tree_type::const_reference;
-    using iterator = typename tree_type::const_iterator;
-    using const_iterator = typename tree_type::const_iterator;
-    using size_type = typename tree_type::size_type;
+    using iterator        = typename tree_type::const_iterator;
+    using const_iterator  = typename tree_type::const_iterator;
+    using size_type       = typename tree_type::size_type;
 
 public:
     multiset() = default;
 
-    explicit multiset(const key_compare& compare) : tree_(compare) {}
+    explicit multiset(const key_compare& compare)
+            : tree_(compare) {}
 
+    multiset(const multiset& rhs)
+            : tree_(rhs.tree_) {}
 
-    multiset(const multiset& rhs) : tree_(rhs.tree_) {}
-
-    multiset(multiset&& rhs) noexcept : tree_(estd::move(rhs.tree_)) {}
+    multiset(multiset&& rhs) noexcept
+            : tree_(estd::move(rhs.tree_)) {}
 
     multiset(const std::initializer_list<value_type>& list) {
         tree_.insert_multi(list.begin(), list.end());
     }
 
     template <typename It>
-    multiset(It first, It last, const key_compare& compare = key_compare()) : multiset(compare) {
+    multiset(It first, It last, const key_compare& compare = key_compare())
+            : multiset(compare) {
         tree_.insert_multi(first, last);
     }
 
@@ -294,5 +298,4 @@ private:
     tree_type tree_;
 };
 
-
-}   // namespace estd
+} // namespace estd
