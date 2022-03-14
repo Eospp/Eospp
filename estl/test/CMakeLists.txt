@@ -36,6 +36,7 @@ set(TEST_LISTS
     rb_tree_test
     set_test
     algorithm_test
+    array_test
     )
 
 set(MEMORY_TESTS
