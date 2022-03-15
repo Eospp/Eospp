@@ -85,4 +85,9 @@ TEST(STRING_TEST,STRING_SNPRINTF_TEST){
     util::snprintf(buf,sizeof(buf),"hello %.1f %d",1.2,-102);
     str = "hello 1.2 -102";
     EXPECT_EQ(str,buf);
+
+
+    util::snprintf(buf,sizeof(buf),"hello %ul",uint64_t(12));
+    str = "hello 12";
+    EXPECT_EQ(str,buf);
 }
