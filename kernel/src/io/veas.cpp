@@ -1,5 +1,6 @@
 #include <io/vesa.hpp>
 #include <util/string.hpp>
+#include <core/interrupt.hpp>
 namespace eospp::io {
 
 unsigned char font_ascii[256][16]=
@@ -321,11 +322,12 @@ static Vesa vesa;
 static char buf[1024];
 
 void printf(const char* fmt, ...) {
+	core::IrqGuard disable_irq;
     va_list args;
     va_start(args, fmt);
-    util::vslprintf(buf, buf + sizeof(buf), fmt, args);
+    util::vslprintf(buf, &buf[0] + sizeof(buf), fmt, args);
     va_end(args);
-    vesa.ColorPrint(WHITE, ORANGE, fmt);
+    vesa.ColorPrint(WHITE, ORANGE, buf);
 }
 
 bool Vesa::Init() {
