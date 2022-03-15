@@ -19,12 +19,6 @@
 .endm
 
 .macro save_context
-	push	rax
-	mov 	rax,es
-	push	rax
-	mov	    rax,ds
-	push	rax
-	xor	    rax,rax
     
     push rbp
     push r15
