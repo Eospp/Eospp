@@ -5,7 +5,7 @@
 .global _syscall\number
 _syscall\number:
     sti
-    push rax
+   
     push \number
     jmp syscall_common_handler
 .endm
@@ -32,6 +32,6 @@ syscall_common_handler:
 
     restore_context
 
-    add rsp,16
+    add rsp,8
 
     iretq

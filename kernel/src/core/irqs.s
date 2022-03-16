@@ -6,7 +6,6 @@
 .global _irq\number
 _irq\number:
     cli
-    push rax
     push \number
     jmp irq_common_handler
 .endm
@@ -39,6 +38,6 @@ irq_common_handler:
 
     restore_context
 
-    add rsp,16
+    add rsp,8
     sti
     iretq
