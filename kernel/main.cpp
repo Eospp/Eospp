@@ -1,15 +1,18 @@
 #include <io/vesa.hpp>
 #include <core/interrupt.hpp>
-#include "util/string.hpp"
+#include <core/physical_allocator.hpp>
 extern "C" int main()
 {
     using namespace eospp;
+    asm volatile("andq $-16, %rsp");
+    Arch::EnableSse();
     io::Vesa::Init();
-    io::printf("start eospp\n");
     core::Interrupt::Init();
-    int i = 0;
+    io::printf("enable irq %d\n",Arch::EnabledIrq());
+    double n  = 3.0 * 1 / 2;
+    memory::init();
     while(1){
-        io::printf("loop %d times\n",i++);
+        
     }
     return 0;
 }
