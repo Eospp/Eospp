@@ -2,6 +2,7 @@
 #include <array.hpp>
 #include <type.hpp>
 #include <tuple.hpp>
+#include <core/arch.hpp>
 namespace eospp::core {
 
 struct IDT_FLAGS {
@@ -68,7 +69,7 @@ struct syscall_regs {
     estd::uint64_t cs;
     estd::uint64_t rflags;
     estd::uint64_t rsp;
-    estd::uint64_t ds;
+    estd::uint64_t ss;
 } __attribute__((packed)); 
 
 using IrqHandler     =  void(*)(syscall_regs*,void*);
@@ -100,7 +101,6 @@ private:
     
     static void InstallSysCalls();
 
-
     static void setGate(estd::size_t gate,Handler handler,estd::uint16_t selector,IDT_FLAGS flags);
 
     static bool RegisterIrqHandler(estd::size_t irq,IrqHandler handler,void *data);
@@ -123,12 +123,14 @@ private:
 class IrqGuard{
 public:
     IrqGuard(){
-        Interrupt::Disable();
+        Arch::DisableHwint(rflags);
     }
 
     ~IrqGuard(){
-        Interrupt::Enable();
+        Arch::EnableHwint(rflags);
     }
+private:
+    estd::size_t rflags;
 };
 
 

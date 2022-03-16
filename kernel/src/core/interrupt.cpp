@@ -10,7 +10,7 @@ void Interrupt::Init() {
     RemapIrqs();
     InstallIrqs();
     InstallSysCalls();
-    Enable();
+   // Enable();
 }
 
 void Interrupt::InstallIdt() {
@@ -121,6 +121,9 @@ void Interrupt::RemapIrqs() {
     //Activate all IRQs in both PICs
     io::out_byte(0x21, 0x00);
     io::out_byte(0xA1, 0x00);
+    
+    // io::out_byte(0x21, 0xFF);
+    // io::out_byte(0xA1, 0xFF);
 }
 
 bool Interrupt::RegisterIrqHandler(estd::size_t irq, IrqHandler handler, void* data) {
@@ -130,7 +133,7 @@ bool Interrupt::RegisterIrqHandler(estd::size_t irq, IrqHandler handler, void* d
 
     irqs_[irq] = {handler, data};
 
-    io::printf("register %ud irq\n", irq);
+    io::printf("register %ul irq\n", irq);
 
     return true;
 }
@@ -141,7 +144,7 @@ bool Interrupt::RegisterSysCall(estd::size_t syscall, SysCallHandler handler) {
 
     syscalls_[syscall] = handler;
 
-    io::printf("register %ud syscall\n", syscall);
+    io::printf("register %ul syscall\n", syscall);
 
     return true;
 }
@@ -173,10 +176,16 @@ void Interrupt::Disable(){
     asm volatile("cli" : : );
 }
 void Interrupt::TriggerIrq(syscall_regs* regs) {
+
     auto&& handler = estd::get<0>(irqs_[regs->code]);
     auto&& data    = estd::get<1>(irqs_[regs->code]);
-    io::printf("regs->code = %ul\n",regs->code);
-    io::printf("regs->rip = %xl\n",regs->rip);
+
+    io::printf("regs->rflags = %xl\t",regs->rflags);
+    io::printf("regs->cs = %ul\t",regs->cs);
+    io::printf("regs->rip = %xl\t",regs->rip);
+    io::printf("regs->code = %ul\t",regs->code);
+    io::printf("regs->rbp = %xl\t",regs->rbp);
+    io::printf("regs->rax = %xl\t",regs->rax);
     if (handler) {
         handler(regs, data);
     }
@@ -234,6 +243,7 @@ void _fault_handler(fault_regs regs) {
 
 void _irq_handler(syscall_regs* regs) {
     //If the IRQ is on the slave controller, send EOI to it
+    IrqGuard disable_irq;
     if (regs->code >= 8) {
         io::out_byte(0xA0, 0x20);
     }
