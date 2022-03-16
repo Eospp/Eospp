@@ -1,6 +1,7 @@
 #include <io/vesa.hpp>
 #include <util/string.hpp>
 #include <core/interrupt.hpp>
+
 namespace eospp::io {
 
 unsigned char font_ascii[256][16]=
@@ -327,7 +328,7 @@ void printf(const char* fmt, ...) {
     va_start(args, fmt);
     util::vslprintf(buf, &buf[0] + sizeof(buf), fmt, args);
     va_end(args);
-    vesa.ColorPrint(WHITE, ORANGE, buf);
+    vesa.ColorPrint(WHITE, BLACK, buf);
 }
 
 bool Vesa::Init() {
@@ -351,7 +352,7 @@ void Vesa::PutChar(Color font_color, Color bg_color, estd::uint8_t c) {
         estd::uint32_t  bits = 0x100;
         for (int j = 0; j < width_char_size_; j++) {
             bits >>= 1;
-            *font & bits ? *addr = font_color : *addr = bg_color;
+            *font & bits ? *addr = font_color : *addr = *addr;
             addr++;
         }
         font++;
@@ -359,14 +360,10 @@ void Vesa::PutChar(Color font_color, Color bg_color, estd::uint8_t c) {
  
 }
 void Vesa::ColorPrint(Color font_color, Color bg_color, estd::string_view str) {
-    for (auto ch : str) {
-        if (ch == '\n') {
-            xpos_ = 0;
-            ypos_++;
-            continue;
-        }
+	core::IrqGuard disable_irq;
 
-        PutChar(font_color, bg_color, ch);
+	auto Put = [&](char ch){
+		Vesa::PutChar(font_color, bg_color,ch);
         xpos_++;
 
         if (xpos_ >= screen_width_ / width_char_size_) {
@@ -375,9 +372,32 @@ void Vesa::ColorPrint(Color font_color, Color bg_color, estd::string_view str) {
         }
 
         if (ypos_ >= screen_height_ / height_char_size_) {
-            ypos_ = 0;
+			Clear();
         }
+	};
+
+    for (auto ch : str) {
+        if (ch == '\n') {
+            xpos_ = 0;
+            ypos_++;
+            continue;
+        }
+		if(ch == '\t'){
+			for(int i = 0;i < 8; i++){
+				Put(' ');
+			}
+		}
+
+		Put(ch);  
     }
+}
+void Vesa::Clear(){
+	 long *addr = reinterpret_cast<long*>(screen_);
+	 for(int i = 0;i < screen_height_ * screen_width_ / 2; i++){
+			  *(addr++) = Color::BLACK;
+	 }
+	 ypos_ = 0;
+	 xpos_ = 0;
 }
 
 }   // namespace eospp::io

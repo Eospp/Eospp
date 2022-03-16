@@ -21,7 +21,7 @@ public:
 
     void ColorPrint(Color font_color, Color bg_color, estd::string_view str);
     void PutChar(Color font_color, Color bg_color, estd::uint8_t c);
-
+    void Clear();
 private:
     int* screen_;
     int screen_width_;
