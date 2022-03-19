@@ -18,6 +18,11 @@ SECTIONS
 		_data = .;
 		*(.data)
 		
+		start_ctors = .;
+		KEEP(*( .init_array ));
+		KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
+		end_ctors = .;
+		
 		_edata = .;
 	}
 	.bss :
@@ -26,6 +31,5 @@ SECTIONS
 		*(.bss)
 		_ebss = .;
 	}
-
 	_end = .;
 }
