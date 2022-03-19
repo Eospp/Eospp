@@ -23,7 +23,8 @@ add_library(kernel SHARED
             ${util_srcs})
             
 set(TEST_LISTS
-    string_test)
+    string_test
+    literals_test)
 
 foreach(Test ${TEST_LISTS})
     message(STATUS "build ${Test}")
