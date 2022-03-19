@@ -21,3 +21,4 @@ _arch_enable_sse:
     .no_sse:
 
     ret
+
