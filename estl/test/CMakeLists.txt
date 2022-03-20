@@ -37,6 +37,7 @@ set(TEST_LISTS
     set_test
     algorithm_test
     array_test
+    bitset_test
     )
 
 set(MEMORY_TESTS
