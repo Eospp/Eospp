@@ -185,6 +185,11 @@ Go_On_Reading:
 	add	esp,			2
 	pop					bp
 	ret
+	
+;==============================================================================
+;==== get next cluster number based on current cluster number =================
+;===  ax 	 : [in]current cluster number | [out] next cluster number
+;==============================================================================
 Get_FAT_Entry:
 
 	push		es

@@ -462,6 +462,7 @@ Switch_Protect:
 	mov   eax,		  cr0
 	bts   eax,		  0
 	bts   eax,		  31
+	bts   eax, 		  16
 	mov   cr0,		  eax 
 	
 

@@ -1,6 +1,6 @@
 .section .text
 .globl _start
-
+.globl PDE
 _start:
         mov   $0x10,            %ax
         mov   %ax,              %ds 

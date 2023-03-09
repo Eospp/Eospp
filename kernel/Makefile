@@ -7,7 +7,7 @@ src += $(wildcard ./src/io/*.cpp)
 src += $(wildcard ./*.cpp)
 src += $(wildcard ./src/core/*.cpp)
 
-src_obj = main.o string.o veas.o interrupt.o physical_allocator.o
+src_obj = main.o string.o veas.o interrupt.o physical_allocator.o e820.o
 asm_obj = head.o irqs.o isrs.o syscall.o arch.o 
 all: system
 	objcopy -I elf64-x86-64 -S -R ".eh_frame" -R ".comment" -O binary system Eospp.bin

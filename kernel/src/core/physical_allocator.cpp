@@ -100,7 +100,6 @@ void init_memory()
 		if (p->type > 4 || p->length == 0 || p->type < 1)
 			break;
 
-		unsigned long tmp = 0;
 		if (p->type == 1)
 			TotalMem += p->length;
 
