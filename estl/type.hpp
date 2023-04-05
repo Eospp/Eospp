@@ -1,10 +1,14 @@
 #pragma once
 namespace estd{
 
-    using uint64_t = unsigned long long;
-    using uint32_t = unsigned int;
-    using uint16_t = unsigned short;
-    using uint8_t  = unsigned char;
+    // using uint64_t = unsigned long long;
+    // using uint32_t = unsigned int;
+    // using uint16_t = unsigned short int;
+    // using uint8_t  = unsigned char;
+    typedef unsigned int uint8_t __attribute__((__mode__(__QI__))); ///< An unsigned 8-bit number
+    typedef unsigned int uint16_t __attribute__ ((__mode__ (__HI__))); ///< An unsigned 16-bit number
+    typedef unsigned int uint32_t __attribute__ ((__mode__ (__SI__))); ///< An unsigned 32-bit number
+    typedef unsigned int uint64_t __attribute__ ((__mode__ (__DI__))); ///< An unsigned 64-bit number
     using u_char   = unsigned char;
     using uintptr_t= unsigned long int;
     using intptr_t = long int;
