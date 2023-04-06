@@ -1,6 +1,8 @@
 bootloader/*.bin
 bootloader/*.img
 
+tools/*.img
+
 kernel/*.bin
 kernel/*.o
 kernel/*.s
