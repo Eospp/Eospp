@@ -23,6 +23,7 @@ start:
 	mov byte [DAP.count],1
 	
 	mov word [DAP.segment],BUFFER_SEGMENT
+	mov word [DAP.offset],BUFFER_BASE
 	mov dword[DAP.lba],0
 	call extend_read
 
@@ -234,7 +235,7 @@ corrupted:
 	jmp $
 
 sectors_per_fat_too_high:
-	mov si,sectors_per_fat_too_high 
+	mov si,fat_sectors_too_high_msg 
 	call print_line
 	jmp $
 
@@ -278,6 +279,7 @@ kernel_loaded_msg			db 'eospp kernel loaded fully',0
 multi_cluster_directory_msg db 'directory not support store multi cluster now!',0
 cluster_too_high_msg		db 'cluster too high!',0
 corrupted_disk_msg			db 'The disk seems to be corrupted',0
+fat_sectors_too_high_msg	db 'sectors per fat number too high!',0
 
 cluster_current 			dw 0
 segment_current				dw 0
@@ -293,4 +295,4 @@ entries_per_cluster   		dw 0
 kernel_start_cluster_high   dw 0
 kernel_start_cluster_low    dw 0
 
-	times 512 * 3 - ($-$$)  db 0
+	times  1536-($-$$)  db 0

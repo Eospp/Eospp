@@ -61,6 +61,8 @@ start:
 
 	jc read_failed 
 
+	mov si,loader_msg
+	call print_line
 	jmp dword 0x410:0x0
 
 extension_not_supported:
@@ -84,7 +86,8 @@ DAP:
 	.lba48		dd 0
 
 
-boot_msg db 'Start Eospp BootLoader!',0
+boot_msg    db 'Start Eospp BootLoader!',0
+loader_msg  db 'Start Loader program!',0
 ext_read_not_support db 'Extendsion read not support!',0
 read_failed_msg db 'read disk failed!',0
 
